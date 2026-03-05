@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Avatar - Blusa Naranja Definida</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; font-family: sans-serif; }
+        #ui {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX( -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            pointer-events: none;
+            text-align: center;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">Usa el mouse para girar el personaje</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, model;
+        let hairL, hairR, hairBack, sideBangGroup;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xeeeeee);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.5, 7);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+
+            createRobloxAvatar();
+
+            window.addEventListener('resize', onWindowResize, false);
+            
+            let isDragging = false;
+            let previousMouseX = 0;
+
+            document.addEventListener('mousedown', () => isDragging = true);
+            document.addEventListener('mouseup', () => isDragging = false);
+            document.addEventListener('mousemove', (e) => {
+                if(isDragging && model) {
+                    const deltaX = e.clientX - previousMouseX;
+                    model.rotation.y += deltaX * 0.01;
+                }
+                previousMouseX = e.clientX;
+            });
+
+            animate();
+        }
+
+        function createFaceTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#f9d4b8';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Ojos
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath(); ctx.ellipse(170, 240, 25, 35, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(342, 240, 25, 35, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Pestañas
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(145, 215); ctx.lineTo(125, 200); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(367, 215); ctx.lineTo(387, 200); ctx.stroke();
+
+            // Brillo ojos
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(180, 225, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(352, 225, 8, 0, Math.PI * 2); ctx.fill();
+
+            // Cejas
+            ctx.strokeStyle = '#4b2e20';
+            ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(130, 190); ctx.quadraticCurveTo(170, 170, 210, 190); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(302, 190); ctx.quadraticCurveTo(342, 170, 382, 190); ctx.stroke();
+
+            // Mejillas
+            ctx.fillStyle = 'rgba(255, 100, 100, 0.3)';
+            ctx.beginPath(); ctx.arc(130, 280, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(382, 280, 30, 0, Math.PI * 2); ctx.fill();
+
+            // Boca
+            ctx.strokeStyle = '#d46a6a';
+            ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.arc(256, 320, 40, 0.2, Math.PI - 0.2, false); ctx.stroke();
+
+            // Estrella
+            ctx.fillStyle = '#ffeb3b';
+            drawStar(ctx, 390, 310, 5, 25, 12);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx; let y = cy; let step = Math.PI / spikes;
+            ctx.beginPath(); ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius; y = cy + Math.sin(rot) * outerRadius; ctx.lineTo(x, y); rot += step;
+                x = cx + Math.cos(rot) * innerRadius; y = cy + Math.sin(rot) * innerRadius; ctx.lineTo(x, y); rot += step;
+            }
+            ctx.fill();
+        }
+
+        function createRobloxAvatar() {
+            model = new THREE.Group();
+
+            const matSkin = new THREE.MeshToonMaterial({ color: 0xf9d4b8 });
+            const matOrangeDark = new THREE.MeshToonMaterial({ color: 0xd35400 }); 
+            const matBlack = new THREE.MeshToonMaterial({ color: 0x111111 });
+            const matHair = new THREE.MeshToonMaterial({ color: 0x3d251a });
+            const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 });
+            const matGlass = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, shininess: 100 });
+            const matClover = new THREE.MeshToonMaterial({ color: 0x27ae60 });
+
+            // --- TORSO (Blusa Naranja) ---
+            const torsoGroup = new THREE.Group();
+            
+            // Parte superior del torso (Chest)
+            const chest = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.1, 0.85), matOrangeDark);
+            chest.position.y = 1.35;
+            torsoGroup.add(chest);
+
+            // Parte media (Waist)
+            const waist = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.8, 0.8), matOrangeDark);
+            waist.position.y = 0.8;
+            torsoGroup.add(waist);
+
+            // Pantalones (Hips)
+            const hips = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.8, 0.95), matBlack);
+            hips.position.y = 0.2;
+            torsoGroup.add(hips);
+            model.add(torsoGroup);
+
+            // --- CUELLO Y COLLAR ---
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.4, 16), matSkin);
+            neck.position.y = 2.1;
+            model.add(neck);
+
+            const chain = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.012, 8, 32), matGold);
+            chain.rotation.x = Math.PI / 2 + 0.35;
+            chain.position.y = 2.05;
+            model.add(chain);
+
+            const pearl = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), matGlass);
+            pearl.position.set(0, 1.82, 0.38);
+            model.add(pearl);
+
+            const clover = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), matClover);
+            clover.position.copy(pearl.position);
+            model.add(clover);
+
+            // --- CABEZA ---
+            const headMaterials = [
+                matSkin, matSkin, matSkin, matSkin, 
+                new THREE.MeshToonMaterial({ map: createFaceTexture() }), 
+                matSkin
+            ];
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), headMaterials);
+            head.position.y = 2.75;
+            model.add(head);
+
+            // --- CABELLO ---
+            const hairGroup = new THREE.Group();
+            hairGroup.position.y = 2.75;
+
+            const hairTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.4, 1.3), matHair);
+            hairTop.position.y = 0.65; 
+            hairGroup.add(hairTop);
+
+            sideBangGroup = new THREE.Group();
+            sideBangGroup.position.set(0.15, 0.58, 0.58);
+            for(let i=0; i<3; i++) {
+                const strand = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.45, 0.1), matHair);
+                strand.position.set(-0.25 + (i*0.25), -0.15, 0);
+                strand.rotation.z = -0.4 + (i*0.08); 
+                sideBangGroup.add(strand);
+            }
+            hairGroup.add(sideBangGroup);
+
+            hairL = new THREE.Group();
+            const hL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.2, 1.2), matHair);
+            hL.position.y = -1.1; hairL.add(hL);
+            hairL.position.set(-0.6, 0.5, 0.1);
+            hairGroup.add(hairL);
+
+            hairR = new THREE.Group();
+            const hR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.2, 1.2), matHair);
+            hR.position.y = -1.1; hairR.add(hR);
+            hairR.position.set(0.6, 0.5, 0.1);
+            hairGroup.add(hairR);
+
+            hairBack = new THREE.Group();
+            const hB = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.5), matHair);
+            hB.position.y = -1.1; hairBack.add(hB);
+            hairBack.position.set(0, 0.5, -0.5);
+            hairGroup.add(hairBack);
+
+            model.add(hairGroup);
+
+            // --- EXTREMIDADES (Separación pronunciada) ---
+            
+            // Brazos Naranjas (Mismo color que la blusa)
+            // Se posicionan un poco más hacia afuera para que se note la hendidura
+            const armL = new THREE.Mesh(new THREE.BoxGeometry(0.55, 2, 0.55), matOrangeDark);
+            armL.position.set(-1.05, 1, 0);
+            model.add(armL);
+
+            const armR = new THREE.Mesh(new THREE.BoxGeometry(0.55, 2, 0.55), matOrangeDark);
+            armR.position.set(1.05, 1, 0);
+            model.add(armR);
+
+            // Piernas
+            const legL = new THREE.Mesh(new THREE.BoxGeometry(0.75, 2.2, 0.75), matBlack);
+            legL.position.set(-0.4, -1.1, 0);
+            model.add(legL);
+            const legR = new THREE.Mesh(new THREE.BoxGeometry(0.75, 2.2, 0.75), matBlack);
+            legR.position.set(0.4, -1.1, 0);
+            model.add(legR);
+
+            scene.add(model);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.002;
+            if(model) {
+                model.position.y = Math.sin(time) * 0.05;
+                if(hairL) hairL.rotation.z = Math.sin(time * 0.8) * 0.06;
+                if(hairR) hairR.rotation.z = Math.cos(time * 0.8) * 0.06;
+                if(sideBangGroup) {
+                    sideBangGroup.children.forEach((s, i) => {
+                        s.rotation.z = (-0.4 + (i*0.08)) + Math.sin(time + i) * 0.02;
+                    });
+                }
+                if(hairBack) hairBack.rotation.x = Math.sin(time * 0.5) * 0.03;
+            }
+            renderer.render(scene, camera);
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>

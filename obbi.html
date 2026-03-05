@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 OBBY ROMÁNTICO - Galería de Recuerdos</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #000; 
+        }
+        canvas { 
+            display: block; 
+        }
+        #ui { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            color: white; 
+            z-index: 100;
+        }
+        #hud {
+            position: absolute; 
+            top: 20px; 
+            left: 20px;
+            background: rgba(0,0,0,0.8); 
+            padding: 15px 25px;
+            border-radius: 10px; 
+            border-left: 5px solid #ff69b4;
+            backdrop-filter: blur(5px); 
+            box-shadow: 0 0 20px rgba(255,105,180,0.3);
+            pointer-events: none;
+        }
+        #checkpoint-msg {
+            position: absolute; 
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,105,180,0.95); 
+            color: white;
+            padding: 20px 40px; 
+            border-radius: 50px;
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            opacity: 0;
+            transition: opacity 0.3s; 
+            pointer-events: none; 
+            box-shadow: 0 0 50px #ff69b4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            z-index: 200;
+        }
+        #checkpoint-msg.show { 
+            opacity: 1; 
+        }
+        #controls {
+            position: absolute; 
+            bottom: 20px; 
+            right: 20px;
+            background: rgba(0,0,0,0.8); 
+            padding: 12px 20px;
+            border-radius: 10px; 
+            font-size: 14px; 
+            border: 1px solid #ff69b4;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+        }
+        #controls kbd {
+            background: #444; 
+            padding: 3px 8px; 
+            border-radius: 4px;
+            color: #ff69b4; 
+            font-weight: bold;
+            border: 1px solid #666;
+        }
+        #level-display {
+            position: absolute; 
+            top: 20px; 
+            right: 20px;
+            background: rgba(0,0,0,0.8); 
+            color: #ff69b4;
+            padding: 10px 20px; 
+            border-radius: 30px;
+            font-size: 1.3rem; 
+            font-weight: bold;
+            border: 2px solid #ff69b4; 
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(255,105,180,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div id="hud">
+            <h2 style="margin:0; color:#ff69b4;">💕 NIVEL: <span id="level" style="color:white;">1</span>/5</h2>
+            <p style="margin:5px 0 0;">Checkpoint: <span id="checkpoint" style="color:#ff69b4;">Inicio</span></p>
+        </div>
+        <div id="level-display">🌸 NIVEL 1</div>
+        <div id="checkpoint-msg">✨ ¡CHECKPOINT! ✨</div>
+        <div id="controls">
+            <div><kbd>WASD</kbd> Mover • <kbd>SPACE</kbd> Saltar • <kbd>MOUSE</kbd> Mirar</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        (function() {
+            // ===== CONFIGURACIÓN BASE =====
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 150, 400);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 20);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            // ===== ILUMINACIÓN =====
+            const ambientLight = new THREE.AmbientLight(0x404060);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+            sunLight.position.set(50, 100, 50);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            scene.add(sunLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffb6c1, 0.5);
+            fillLight.position.set(-30, 20, 30);
+            scene.add(fillLight);
+
+            // ===== MATERIALES DEL PERSONAJE =====
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xf2d2b6 });
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+            // ===== FUNCIÓN PARA EL PELO =====
+            function applyHairStyle(group, role, color) {
+                const hairMat = new THREE.MeshStandardMaterial({ color: color });
+                let config = [];
+                
+                if(role === "player") {
+                    config = [
+                        { s: [1.5, 0.3, 1.5], p: [0, 0.75, 0] },
+                        { s: [1.5, 1.0, 0.3], p: [0, 0.2, -0.65] },
+                        { s: [0.3, 0.8, 1.3], p: [0.75, 0.2, 0] },
+                        { s: [0.3, 0.8, 1.3], p: [-0.75, 0.2, 0] },
+                        { s: [1.3, 0.4, 0.4], p: [0, 0.6, 0.65] }
+                    ];
+                }
+                
+                config.forEach(c => {
+                    const h = new THREE.Mesh(new THREE.BoxGeometry(...c.s), hairMat);
+                    h.position.set(...c.p);
+                    h.castShadow = true;
+                    group.add(h);
+                });
+            }
+
+            // ===== PERSONAJE =====
+            function createCharacter(shirtColor, pantsColor, role = "player") {
+                const char = new THREE.Group();
+                const shirt = new THREE.MeshStandardMaterial({ color: shirtColor });
+                const pants = new THREE.MeshStandardMaterial({ color: pantsColor });
+
+                const torso = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 1), shirt);
+                torso.position.y = 3;
+                torso.castShadow = true;
+                torso.receiveShadow = true;
+                char.add(torso);
+
+                const headGroup = new THREE.Group();
+                headGroup.position.y = 2;
+                torso.add(headGroup);
+
+                const headCube = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.4, 1.4), skinMat);
+                headCube.castShadow = true;
+                headGroup.add(headCube);
+
+                const hairColor = role === "player" ? 0x4b3621 : 0x2d1b00;
+                applyHairStyle(headGroup, role, hairColor);
+
+                const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8), eyeMat);
+                e1.position.set(0.3, 0.1, 0.71); 
+                headGroup.add(e1);
+                
+                const e2 = e1.clone(); 
+                e2.position.set(-0.3, 0.1, 0.71); 
+                headGroup.add(e2);
+                
+                const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 10, Math.PI), eyeMat);
+                mouth.rotation.x = Math.PI;
+                mouth.position.set(0, -0.3, 0.7);
+                headGroup.add(mouth);
+
+                const createArm = (x) => {
+                    const pivot = new THREE.Group();
+                    pivot.position.set(x, 1, 0);
+                    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.75, 2.2, 0.75), skinMat);
+                    mesh.position.y = -0.9; 
+                    mesh.castShadow = true;
+                    pivot.add(mesh);
+                    return pivot;
+                };
+                const armL = createArm(-1.4);
+                const armR = createArm(1.4);
+                torso.add(armL, armR);
+
+                const createLeg = (x) => {
+                    const pivot = new THREE.Group();
+                    pivot.position.set(x, 1.8, 0);
+                    const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.2, 0.9), pants);
+                    mesh.position.y = -1; 
+                    mesh.castShadow = true;
+                    pivot.add(mesh);
+                    return pivot;
+                };
+                const legL = createLeg(-0.55);
+                const legR = createLeg(0.55);
+                char.add(legL, legR);
+
+                return char;
+            }
+
+            // ===== CREAR JUGADOR =====
+            const player = {
+                mesh: createCharacter(0x3498db, 0x222222, "player"),
+                velocity: new THREE.Vector3(),
+                speed: 18,
+                jumpForce: 18,
+                canJump: false,
+                camH: 0,
+                camV: 0.6,
+                onGround: false,
+                height: 4.5,
+                footOffset: 1.2
+            };
+            
+            player.mesh.position.set(0, 2.3, 0);
+            player.mesh.castShadow = true;
+            player.mesh.receiveShadow = true;
+            scene.add(player.mesh);
+
+            // ===== NUBES =====
+            function createCloud(x, y, z) {
+                const group = new THREE.Group();
+                const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                
+                const p1 = new THREE.Mesh(new THREE.SphereGeometry(2, 8), whiteMat);
+                p1.position.set(0, 0, 0);
+                group.add(p1);
+                
+                const p2 = new THREE.Mesh(new THREE.SphereGeometry(1.8, 8), whiteMat);
+                p2.position.set(1.5, 0.5, 0.5);
+                group.add(p2);
+                
+                const p3 = new THREE.Mesh(new THREE.SphereGeometry(1.8, 8), whiteMat);
+                p3.position.set(-1.5, 0.3, -0.5);
+                group.add(p3);
+                
+                group.position.set(x, y, z);
+                group.isCloud = true;
+                return group;
+            }
+
+            for (let i = 0; i < 15; i++) {
+                scene.add(createCloud(
+                    (Math.random() - 0.5) * 200,
+                    30 + Math.random() * 30,
+                    (Math.random() - 0.5) * 200
+                ));
+            }
+
+            // ===== 📸 CONFIGURACIÓN DE TUS FOTOS PERSONALES =====
+            // ⚠️ CAMBIA ESTO: Pon aquí las URLs de tus propias imágenes
+            // Puedes usar imágenes locales o URLs de internet
+            const MIS_FOTOS = [
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+1', 
+                    mensaje: 'Nuestro primer momento' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+2', 
+                    mensaje: 'Te amo' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+3', 
+                    mensaje: 'Siempre juntos' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+4', 
+                    mensaje: 'Mi corazón' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+5', 
+                    mensaje: 'Eres especial' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+6', 
+                    mensaje: 'Para siempre' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+7', 
+                    mensaje: 'Contigo todo' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+8', 
+                    mensaje: 'Mi vida' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+9', 
+                    mensaje: 'Eres mi sol' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+10', 
+                    mensaje: 'Te elijo a ti' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+11', 
+                    mensaje: 'Mi persona favorita' 
+                },
+                { 
+                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+12', 
+                    mensaje: 'Juntos por siempre' 
+                }
+            ];
+
+            // ===== SISTEMA DE FOTOS CON IMÁGENES PERSONALES =====
+            let photos = [];
+            const textureLoader = new THREE.TextureLoader();
+            
+            function createPhotoWithImage(x, y, z, fotoData, side) {
+                const group = new THREE.Group();
+                
+                // Marco de la foto
+                const frameMat = new THREE.MeshStandardMaterial({ color: 0xff69b4 });
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 0.3), frameMat);
+                frame.position.set(0, 0, 0);
+                frame.castShadow = true;
+                group.add(frame);
+                
+                // Fondo blanco
+                const photoMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const photoBg = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.2, 0.2), photoMat);
+                photoBg.position.set(0, 0, 0.15);
+                group.add(photoBg);
+                
+                // Cargar imagen personal
+                textureLoader.load(
+                    fotoData.url,
+                    (texture) => {
+                        texture.colorSpace = THREE.SRGBColorSpace;
+                        const imgMat = new THREE.MeshStandardMaterial({ 
+                            map: texture,
+                            transparent: true 
+                        });
+                        const imgMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), imgMat);
+                        imgMesh.position.set(0, 0, 0.2);
+                        group.add(imgMesh);
+                    },
+                    undefined,
+                    (err) => {
+                        console.warn('⚠️ No se pudo cargar la imagen:', fotoData.url);
+                        // Fallback: mostrar color rosa si falla la imagen
+                        const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xffb6c1 });
+                        const fallbackMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), fallbackMat);
+                        fallbackMesh.position.set(0, 0, 0.2);
+                        group.add(fallbackMesh);
+                    }
+                );
+                
+                group.position.set(x, y, z);
+                group.userData = {
+                    originalY: y,
+                    message: fotoData.mensaje,
+                    side: side
+                };
+                
+                return group;
+            }
+
+            // ===== PLATAFORMAS Y CHECKPOINTS =====
+            let platforms = [];
+            let checkpoints = [];
+            let currentCheckpoint = new THREE.Vector3(0, 2.3, 0);
+            let currentLevel = 1;
+
+            // ✅ FIX: Plataformas MÁS GRANDES para no caerse fácilmente
+            const PLATFORM_WIDTH = 6;   // Antes era 3
+            const PLATFORM_DEPTH = 6;   // Antes era 3
+            const PLATFORM_HEIGHT = 0.5;
+            const PLATFORM_SPACING = 8; // Distancia entre plataformas (antes 6)
+
+            function createPlatform(x, y, z, w, h, d, color, isCheckpoint = false) {
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: color,
+                    emissive: isCheckpoint ? 0x331100 : 0x000000
+                });
+                
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+                mesh.position.set(x, y, z);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                scene.add(mesh);
+                platforms.push(mesh);
+
+                if(isCheckpoint) {
+                    checkpoints.push({ 
+                        pos: new THREE.Vector3(x, y + 1.5, z), 
+                        name: `Checkpoint ${checkpoints.length + 1}`,
+                        mesh: mesh
+                    });
+                    
+                    const glowMat = new THREE.MeshStandardMaterial({ 
+                        color: 0xffaa00, 
+                        emissive: 0x442200,
+                        transparent: true, 
+                        opacity: 0.3 
+                    });
+                    const glow = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, h + 0.4, d + 0.4), glowMat);
+                    glow.position.set(x, y, z);
+                    scene.add(glow);
+                }
+                
+                return mesh;
+            }
+
+            // ===== CONSTRUIR NIVEL CON PLATAFORMAS MÁS GRANDES =====
+            function buildLevel(level) {
+                // Limpiar plataformas y fotos anteriores
+                platforms.forEach(p => scene.remove(p));
+                photos.forEach(p => scene.remove(p));
+                platforms = [];
+                checkpoints = [];
+                photos = [];
+                
+                const totalPlatforms = 12; // ✅ MÁS plataformas con fotos
+                const startX = 0;
+                
+                // ✅ Plataforma inicial MÁS GRANDE (checkpoint)
+                createPlatform(startX, 1, 0, 8, 0.5, 8, 0x4a90e2, true);
+                
+                // 📸 CREAR PLATAFORMAS CON FOTOS A LOS LADOS
+                for(let i = 1; i <= totalPlatforms; i++) {
+                    const x = i * PLATFORM_SPACING;
+                    // Variación suave de altura para hacerlo interesante pero no imposible
+                    const y = 1 + Math.sin(i * 0.5) * 0.8; 
+                    const z = 0;
+                    
+                    // ✅ Plataforma más grande y estable
+                    createPlatform(x, y, z, PLATFORM_WIDTH, PLATFORM_HEIGHT, PLATFORM_DEPTH, 0xff69b4);
+                    
+                    // 🎯 Fotos alternadas: izquierda/derecha, LEJOS del camino
+                    const sideOffset = (i % 2 === 0) ? 9 : -9; // ✅ Más lejos para no estorbar
+                    const photoX = x;
+                    const photoY = y + 4; // ✅ Más arriba para mejor visión
+                    const photoZ = sideOffset;
+                    
+                    // Usar una de las fotos personales
+                    const fotoData = MIS_FOTOS[(i - 1) % MIS_FOTOS.length];
+                    const photo = createPhotoWithImage(photoX, photoY, photoZ, fotoData, sideOffset > 0 ? 'right' : 'left');
+                    scene.add(photo);
+                    photos.push(photo);
+                }
+                
+                // ✅ Plataforma final MÁS GRANDE
+                const endX = totalPlatforms * PLATFORM_SPACING;
+                createPlatform(endX, 2, 0, 8, 0.5, 8, 0xffaa00, true);
+                
+                // Corazón gigante en la meta
+                const heartMat = new THREE.MeshStandardMaterial({ color: 0xff1493, emissive: 0x440022 });
+                const heart = new THREE.Mesh(new THREE.SphereGeometry(2.5, 16), heartMat);
+                heart.position.set(endX, 6, 0);
+                scene.add(heart);
+                
+                document.getElementById('level').innerText = level;
+                document.getElementById('level-display').innerText = `🌸 NIVEL ${level}`;
+            }
+
+            buildLevel(1);
+
+            // ===== CONTROLES =====
+            const keys = {};
+            let camZoom = 12;
+            const camZoomMin = 6;
+            const camZoomMax = 25;
+            
+            window.addEventListener('keydown', (e) => { 
+                keys[e.code] = true; 
+                if(e.code.startsWith('Arrow')) e.preventDefault();
+                
+                if(e.code === 'KeyO') {
+                    camZoom = Math.max(camZoomMin, camZoom - 2);
+                }
+                if(e.code === 'KeyI') {
+                    camZoom = Math.min(camZoomMax, camZoom + 2);
+                }
+            });
+            window.addEventListener('keyup', (e) => { 
+                keys[e.code] = false; 
+                if(e.code.startsWith('Arrow')) e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if(document.pointerLockElement) {
+                    player.camH -= e.movementX * 0.002;
+                    player.camV = Math.max(0.2, Math.min(1.2, player.camV + e.movementY * 0.002));
+                }
+            });
+
+            renderer.domElement.addEventListener('click', () => {
+                renderer.domElement.requestPointerLock();
+            });
+
+            // ===== FUNCIÓN DE REINICIO =====
+            window.restartFromCheckpoint = function() {
+                player.mesh.position.copy(currentCheckpoint);
+                player.velocity.set(0, 0, 0);
+            };
+
+            // ===== ANIMACIÓN PRINCIPAL =====
+            const clock = new THREE.Clock();
+            
+            function animate() {
+                const dt = Math.min(clock.getDelta(), 0.1);
+
+                // 🪲 DEBUG CONSOLE
+                if(window.debugMode) {
+                    console.log(`📍 Player Y: ${player.mesh.position.y.toFixed(2)} | Vel Y: ${player.velocity.y.toFixed(2)} | onGround: ${player.onGround}`);
+                }
+
+                // 🎮 MOVIMIENTO
+                const move = new THREE.Vector3();
+                if(keys['KeyW'] || keys['ArrowUp']) move.z -= 1;
+                if(keys['KeyS'] || keys['ArrowDown']) move.z += 1;
+                if(keys['KeyA'] || keys['ArrowLeft']) move.x -= 1;
+                if(keys['KeyD'] || keys['ArrowRight']) move.x += 1;
+
+                if(move.length() > 0.1) {
+                    move.normalize();
+                    const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
+                    const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
+                    
+                    const desiredVelocity = new THREE.Vector3()
+                        .copy(forward.multiplyScalar(-move.z))
+                        .add(right.multiplyScalar(move.x))
+                        .normalize()
+                        .multiplyScalar(player.speed);
+                    
+                    player.velocity.x += (desiredVelocity.x - player.velocity.x) * 12 * dt;
+                    player.velocity.z += (desiredVelocity.z - player.velocity.z) * 12 * dt;
+                    
+                    const targetRot = Math.atan2(desiredVelocity.x, desiredVelocity.z);
+                    player.mesh.rotation.y += (targetRot - player.mesh.rotation.y) * 0.2;
+                } else {
+                    player.velocity.x *= 0.85;
+                    player.velocity.z *= 0.85;
+                    if(Math.abs(player.velocity.x) < 0.1) player.velocity.x = 0;
+                    if(Math.abs(player.velocity.z) < 0.1) player.velocity.z = 0;
+                }
+
+                // 🪂 GRAVEDAD
+                player.velocity.y -= 40 * dt;
+
+                // ✅ DETECCIÓN DE SUELO MEJORADA
+                const rayOrigin = player.mesh.position.clone();
+                rayOrigin.y += player.footOffset;
+                const raycaster = new THREE.Raycaster(rayOrigin, new THREE.Vector3(0, -1, 0), 0, 2.5);
+                const intersects = raycaster.intersectObjects(platforms);
+
+                player.onGround = intersects.length > 0 && player.velocity.y <= 0.1;
+
+                if(player.onGround) {
+                    const groundY = intersects[0].point.y + player.footOffset;
+                    
+                    if(Math.abs(player.mesh.position.y - groundY) > 0.05) {
+                        player.mesh.position.y = THREE.MathUtils.lerp(player.mesh.position.y, groundY, 0.25);
+                    }
+                    
+                    if(player.velocity.y < 0) {
+                        player.velocity.y = THREE.MathUtils.lerp(player.velocity.y, 0, 0.4);
+                    }
+                    
+                    if(keys['Space'] && Math.abs(player.velocity.y) < 0.3 && Math.abs(player.velocity.x) < 0.5 && Math.abs(player.velocity.z) < 0.5) {
+                        player.velocity.y = player.jumpForce;
+                        player.onGround = false;
+                        if(window.debugMode) console.log("🦘 JUMP!");
+                    }
+                }
+
+                player.mesh.position.x += player.velocity.x * dt;
+                player.mesh.position.y += player.velocity.y * dt;
+                player.mesh.position.z += player.velocity.z * dt;
+
+                if(player.mesh.position.y < -20) {
+                    window.restartFromCheckpoint();
+                }
+
+                // ===== FOTOS =====
+                photos.forEach(photo => {
+                    const dist = player.mesh.position.distanceTo(photo.position);
+                    if(dist < 20) {
+                        photo.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
+                        photo.lookAt(player.mesh.position);
+                    } else {
+                        photo.scale.lerp(new THREE.Vector3(0, 0, 0), 0.1);
+                    }
+                });
+
+                // ===== CÁMARA =====
+                const camOffset = new THREE.Vector3(
+                    Math.sin(player.camH) * Math.cos(player.camV) * camZoom,
+                    3 + Math.sin(player.camV) * 5,
+                    Math.cos(player.camH) * Math.cos(player.camV) * camZoom
+                );
+                
+                camera.position.copy(player.mesh.position).add(camOffset);
+                camera.lookAt(player.mesh.position.clone().add(new THREE.Vector3(0, 2, 0)));
+
+                // ===== CHECKPOINTS =====
+                checkpoints.forEach(cp => {
+                    const dist = player.mesh.position.distanceTo(cp.pos);
+                    if(dist < 3) {
+                        currentCheckpoint.copy(cp.pos);
+                        document.getElementById('checkpoint').innerText = cp.name;
+                        
+                        const msg = document.getElementById('checkpoint-msg');
+                        msg.classList.add('show');
+                        setTimeout(() => msg.classList.remove('show'), 1000);
+                    }
+                });
+
+                // ===== META =====
+                const endX = totalPlatforms * PLATFORM_SPACING;
+                const distToFinish = player.mesh.position.distanceTo(new THREE.Vector3(endX, 2, 0));
+                if(distToFinish < 5) {
+                    alert("💕 ¡FELICIDADES! Llegaste a la meta. Te amo 💕");
+                    window.restartFromCheckpoint();
+                }
+
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
+
+            // Necesario para que funcione la variable totalPlatforms en animate()
+            const totalPlatforms = 12;
+
+            // ===== REDIMENSIONAR =====
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+        })();
+    </script>
+</body>
+</html>
