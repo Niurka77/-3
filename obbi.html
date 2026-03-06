@@ -401,7 +401,7 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
     
     // Marco rosado
     const frameMat = new THREE.MeshStandardMaterial({ color: 0xff69b4 });
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 0.3), frameMat);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(5, 6, 0.4), frameMat);
     frame.position.set(0, 0, 0);
     frame.castShadow = true;
     group.add(frame);
@@ -412,7 +412,7 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
         side: THREE.DoubleSide
     });
     const photoBg = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.6, 3.2),  // PLANO en vez de Box
+        new THREE.PlaneGeometry(4.5, 5.5),  // PLANO en vez de Box
         photoMat
     );
     photoBg.position.set(0, 0, 0.1);  // Ligeramente detrás del marco
@@ -441,7 +441,7 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
             
             // Crear la imagen - AHORA MÁS ADELANTE DEL FONDO
             const imgMesh = new THREE.Mesh(
-                new THREE.PlaneGeometry(2.4, 3),
+                new THREE.PlaneGeometry(4.2, 5.2),
                 imgMat
             );
             imgMesh.name = 'foto-imagen';
@@ -485,8 +485,9 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
             let currentCheckpoint = new THREE.Vector3(0, 2.3, 0);
             let currentLevel = 1;
             
-            let gameWon = false;
-            let levelCompleted = false;
+         let gameWon = false;
+let levelCompleted = false;
+let isTransitioning = false; // 🔒 NUEVO: Evita avances duplicados
 
             // ===== CONFIGURACIÓN DE NIVELES =====
             const LEVEL_CONFIGS = [
@@ -500,8 +501,8 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     platformColor: 0xff69b4,
                     startColor: 0x4a90e2,
                     endColor: 0xffaa00,
-                    photoOffset: 9,
-                    photoHeight: 4
+                    photoOffset: 12,
+                    photoHeight: 8
                 },
                 { 
                     id: 2,
@@ -513,8 +514,8 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     platformColor: 0x9b59b6,
                     startColor: 0x34495e,
                     endColor: 0xf1c40f,
-                    photoOffset: 8,
-                    photoHeight: 5,
+                    photoOffset: 14,
+                    photoHeight: 12,
                     hasMoving: true
                 },
                 { 
@@ -527,8 +528,8 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     platformColor: 0xff1493,
                     startColor: 0xff69b4,
                     endColor: 0xff4500,
-                    photoOffset: 7,
-                    photoHeight: 6,
+                    photoOffset: 14,
+                    photoHeight: 12,
                     hasMoving: true,
                     hasDisappearing: true
                 },
@@ -542,8 +543,8 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     platformColor: 0x00ffff,
                     startColor: 0x4b0082,
                     endColor: 0xffd700,
-                    photoOffset: 6,
-                    photoHeight: 7,
+                    photoOffset: 14,
+                    photoHeight: 14,
                     hasMoving: true,
                     hasDisappearing: true,
                     hasNarrow: true
@@ -558,8 +559,8 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     platformColor: 0xffffff,
                     startColor: 0xff69b4,
                     endColor: 0xffd700,
-                    photoOffset: 10,
-                    photoHeight: 5,
+                    photoOffset: 15,
+                    photoHeight: 12,
                     isFinal: true
                 }
             ];
@@ -772,20 +773,42 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
             }
 
             // ===== SIGUIENTE NIVEL =====
-            function goToNextLevel() {
-                if(currentLevel < LEVEL_CONFIGS.length) {
-                    document.getElementById('level-complete').classList.remove('show');
-                    loadLevel(currentLevel + 1);
-                    
-                    const msg = document.getElementById('checkpoint-msg');
-                    msg.classList.add('show');
-                    setTimeout(() => msg.classList.remove('show'), 1000);
-                } else {
-                    alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
-                    loadLevel(1);
-                }
-            }
-
+         // ===== SIGUIENTE NIVEL (CON PROTECCIÓN ANTI-SPAM) =====
+function goToNextLevel() {
+    // 🛡️ Si ya está en transición, ignorar clicks adicionales
+    if(isTransitioning) return;
+    isTransitioning = true;
+    
+    // 🛡️ Desactivar temporalmente el botón para evitar doble-click
+    const btn = document.getElementById('next-level-btn');
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'not-allowed';
+    
+    if(currentLevel < LEVEL_CONFIGS.length) {
+        document.getElementById('level-complete').classList.remove('show');
+        loadLevel(currentLevel + 1);
+        
+        const msg = document.getElementById('checkpoint-msg');
+        msg.classList.add('show');
+        
+        // 🔓 Reactivar después de la transición
+        setTimeout(() => {
+            msg.classList.remove('show');
+            isTransitioning = false;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }, 1000);
+    } else {
+        alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
+        loadLevel(1);
+        isTransitioning = false;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+}
             loadLevel(1);
 
             // ===== CONTROLES =====
@@ -794,17 +817,28 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
             const camZoomMin = 6;
             const camZoomMax = 25;
             
-            window.addEventListener('keydown', (e) => { 
-                keys[e.code] = true; 
-                if(e.code.startsWith('Arrow')) e.preventDefault();
-                
-                if(e.code === 'KeyO') camZoom = Math.max(camZoomMin, camZoom - 2);
-                if(e.code === 'KeyI') camZoom = Math.min(camZoomMax, camZoom + 2);
-            });
-            window.addEventListener('keyup', (e) => { 
-                keys[e.code] = false; 
-                if(e.code.startsWith('Arrow')) e.preventDefault();
-            });
+      // ===== CONTROLES CON PROTECCIÓN DURANTE TRANSICIONES =====
+window.addEventListener('keydown', (e) => { 
+    // 🛑 Ignorar inputs si el juego está en transición o completado
+    if(isTransitioning || gameWon || levelCompleted) {
+        if(e.code === 'Enter' || e.code === 'Space') e.preventDefault();
+        return;
+    }
+    
+    keys[e.code] = true; 
+    if(e.code.startsWith('Arrow')) e.preventDefault();
+    
+    if(e.code === 'KeyO') camZoom = Math.max(camZoomMin, camZoom - 2);
+    if(e.code === 'KeyI') camZoom = Math.min(camZoomMax, camZoom + 2);
+});
+
+window.addEventListener('keyup', (e) => { 
+    // 🛑 Ignorar releases si el juego está congelado
+    if(isTransitioning || gameWon || levelCompleted) return;
+    
+    keys[e.code] = false; 
+    if(e.code.startsWith('Arrow')) e.preventDefault();
+});
 
             document.addEventListener('mousemove', (e) => {
                 if(document.pointerLockElement) {
@@ -817,11 +851,14 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                 renderer.domElement.requestPointerLock();
             });
 
-            window.restartFromCheckpoint = function() {
-                if(gameWon || levelCompleted) return;
-                player.mesh.position.copy(currentCheckpoint);
-                player.velocity.set(0, 0, 0);
-            };
+         window.restartFromCheckpoint = function() {
+    // 🛑 No permitir respawn si el juego está en estado terminal
+    if(gameWon || levelCompleted || isTransitioning) return;
+    
+    player.mesh.position.copy(currentCheckpoint);
+    player.velocity.set(0, 0, 0);
+    player.onGround = false;
+};
 
             document.getElementById('next-level-btn').addEventListener('click', goToNextLevel);
 
@@ -929,32 +966,44 @@ function createPhotoWithImage(x, y, z, fotoData, side) {
                     }
                 });
 
-                if(!gameWon && !levelCompleted) {
-                    const levelConfig = LEVEL_CONFIGS.find(l => l.id === currentLevel);
-                    if(levelConfig) {
-                        const endX = levelConfig.platforms * levelConfig.spacing;
-                        const distToFinish = player.mesh.position.distanceTo(new THREE.Vector3(endX, 2, 0));
+               // ===== DETECCIÓN DE META CON CONGELADO TOTAL DEL JUGADOR =====
+if(!gameWon && !levelCompleted) {
+    const levelConfig = LEVEL_CONFIGS.find(l => l.id === currentLevel);
+    if(levelConfig) {
+        const endX = levelConfig.platforms * levelConfig.spacing;
+        const distToFinish = player.mesh.position.distanceTo(new THREE.Vector3(endX, 2, 0));
 
-                        if(distToFinish < 5) {
-                            if(levelConfig.isFinal) {
-                                gameWon = true;
-                                player.velocity.set(0, 0, 0);
-                                Object.keys(keys).forEach(key => keys[key] = false);
-                                alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
-                                setTimeout(() => loadLevel(1), 3000);
-                            } else {
-                                levelCompleted = true;
-                                player.velocity.set(0, 0, 0);
-                                Object.keys(keys).forEach(key => keys[key] = false);
-                                
-                                const completeMsg = document.getElementById('level-complete');
-                                const nextLevel = LEVEL_CONFIGS.find(l => l.id === currentLevel + 1);
-                                document.getElementById('next-level-name').innerText = nextLevel ? `Próximo: ${nextLevel.name}` : '¡Juego Completado!';
-                                completeMsg.classList.add('show');
-                            }
-                        }
-                    }
-                }
+        if(distToFinish < 5) {
+            // 🛑 CONGELAR JUGADOR INMEDIATAMENTE
+            player.velocity.set(0, 0, 0);
+            Object.keys(keys).forEach(key => keys[key] = false);
+            
+            if(levelConfig.isFinal) {
+                gameWon = true;
+                alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
+                setTimeout(() => loadLevel(1), 3000);
+            } else {
+                levelCompleted = true;
+                
+                const completeMsg = document.getElementById('level-complete');
+                const nextLevel = LEVEL_CONFIGS.find(l => l.id === currentLevel + 1);
+                document.getElementById('next-level-name').innerText = nextLevel ? `Próximo: ${nextLevel.name}` : '¡Juego Completado!';
+                completeMsg.classList.add('show');
+            }
+        }
+    }
+}
+
+// 🛑 SI EL JUEGO ESTÁ CONGELADO, NO ACTUALIZAR POSICIÓN NI VELOCIDAD
+if(gameWon || levelCompleted || isTransitioning) {
+    player.velocity.set(0, 0, 0);
+    // No actualizar posición del jugador
+} else {
+    // ✅ Solo actualizar posición si el juego está activo
+    player.mesh.position.x += player.velocity.x * dt;
+    player.mesh.position.y += player.velocity.y * dt;
+    player.mesh.position.z += player.velocity.z * dt;
+}
 
                 renderer.render(scene, camera);
                 requestAnimationFrame(animate);
