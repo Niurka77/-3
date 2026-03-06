@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💕 OBBY ROMÁNTICO - Galería de Recuerdos</title>
+    <title>:3</title>
     <style>
         body { 
             margin: 0; 
@@ -92,20 +92,87 @@
             backdrop-filter: blur(5px);
             box-shadow: 0 0 20px rgba(255,105,180,0.3);
         }
+        #level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,105,180,0.95);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            box-shadow: 0 0 80px #ff69b4;
+            text-align: center;
+            z-index: 300;
+        }
+        #level-complete.show {
+            opacity: 1;
+        }
+        #level-complete button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: white;
+            color: #ff69b4;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.2s;
+        }
+        #level-complete button:hover {
+            transform: scale(1.05);
+        }
+        #music-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 300;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 2px solid white;
+            box-shadow: 0 0 20px rgba(255,105,180,0.5);
+        }
+        #music-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            background: #ff1493;
+        }
     </style>
 </head>
 <body>
     <div id="ui">
         <div id="hud">
-            <h2 style="margin:0; color:#ff69b4;">💕 NIVEL: <span id="level" style="color:white;">1</span>/5</h2>
+            <h2 style="margin:0; color:#ff69b4;">💕 NIVEL: <span id="level" style="color:white;">1</span>/<span id="total-levels">5</span></h2>
             <p style="margin:5px 0 0;">Checkpoint: <span id="checkpoint" style="color:#ff69b4;">Inicio</span></p>
         </div>
-        <div id="level-display">🌸 NIVEL 1</div>
+        <div id="level-display">🌸 Camino de Flores</div>
         <div id="checkpoint-msg">✨ ¡CHECKPOINT! ✨</div>
+        <div id="level-complete">
+            💕 ¡NIVEL COMPLETADO! 💕<br>
+            <span id="next-level-name" style="font-size:1.3rem; display:block; margin:10px 0;"></span>
+            <button id="next-level-btn">▶️ Siguiente Nivel</button>
+        </div>
         <div id="controls">
-            <div><kbd>WASD</kbd> Mover • <kbd>SPACE</kbd> Saltar • <kbd>MOUSE</kbd> Mirar</div>
+            <div><kbd>WASD</kbd> Mover • <kbd>SPACE</kbd> Saltar • <kbd>MOUSE</kbd> Mirar • <kbd>I/O</kbd> Zoom</div>
         </div>
     </div>
+
+    <!-- 🎵 MÚSICA DE FONDO (los controles estarán dentro del script) -->
+    <audio id="bg-music" src="music.mp3" loop></audio>
+    <button id="music-btn">🎵 Activar Música</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
@@ -125,6 +192,33 @@
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
+
+            // ===== CONFIGURACIÓN DE MÚSICA (AHORA DENTRO DE LA FUNCIÓN) =====
+            const musicBtn = document.getElementById('music-btn');
+            const bgMusic = document.getElementById('bg-music');
+            bgMusic.volume = 0.3;
+
+            musicBtn.addEventListener('click', () => {
+                if(bgMusic.paused) {
+                    bgMusic.play().catch(e => console.log('⚠️ Audio requiere interacción:', e));
+                    musicBtn.innerText = '🔇 Silenciar Música';
+                    musicBtn.style.background = '#444';
+                } else {
+                    bgMusic.pause();
+                    musicBtn.innerText = '🎵 Activar Música';
+                    musicBtn.style.background = '#ff69b4';
+                }
+            });
+
+            // Activar música al primer clic en el juego
+            renderer.domElement.addEventListener('click', () => {
+                if(bgMusic.paused && !bgMusic.hasPlayed) {
+                    bgMusic.play().catch(e => console.log('⚠️ Audio requiere interacción:', e));
+                    bgMusic.hasPlayed = true;
+                    musicBtn.innerText = '🔇 Silenciar Música';
+                    musicBtn.style.background = '#444';
+                }
+            }, { once: true });
 
             // ===== ILUMINACIÓN =====
             const ambientLight = new THREE.AmbientLight(0x404060);
@@ -282,136 +376,237 @@
                 ));
             }
 
-            // ===== 📸 CONFIGURACIÓN DE TUS FOTOS PERSONALES =====
-            // ⚠️ CAMBIA ESTO: Pon aquí las URLs de tus propias imágenes
-            // Puedes usar imágenes locales o URLs de internet
-            const MIS_FOTOS = [
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+1', 
-                    mensaje: 'Nuestro primer momento' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+2', 
-                    mensaje: 'Te amo' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+3', 
-                    mensaje: 'Siempre juntos' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+4', 
-                    mensaje: 'Mi corazón' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+5', 
-                    mensaje: 'Eres especial' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+6', 
-                    mensaje: 'Para siempre' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+7', 
-                    mensaje: 'Contigo todo' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+8', 
-                    mensaje: 'Mi vida' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+9', 
-                    mensaje: 'Eres mi sol' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+10', 
-                    mensaje: 'Te elijo a ti' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+11', 
-                    mensaje: 'Mi persona favorita' 
-                },
-                { 
-                    url: 'https://via.placeholder.com/256/ff69b4/ffffff?text=Foto+12', 
-                    mensaje: 'Juntos por siempre' 
-                }
-            ];
+          // ===== 📸 CONFIGURACIÓN DE TUS FOTOS (EDITA LOS NOMBRES AQUÍ) =====
+const MIS_FOTOS = [
+    { url: 'fotos/yopi.jpg', mensaje: 'Nuestro primer momento ❤️' },
+    { url: 'fotos/caramelito.jpg', mensaje: 'Te amo 💕' },
+    { url: 'fotos/yopi.jpg', mensaje: 'Siempre juntos 💑' },
+    { url: 'fotos/yepi.jpg', mensaje: 'Mi corazón 💖' },
+    { url: 'fotos/alejandro_emo.jpg', mensaje: 'Eres especial ✨' },
+    { url: 'fotos/caramelito8.jpg', mensaje: 'Para siempre ♾️' },
+    { url: 'fotos/caramelito7.jpg', mensaje: 'Contigo todo 🌈' },
+    { url: 'fotos/caramelito6.jpg', mensaje: 'Mi vida 🌟' },
+    { url: 'fotos/caramelito5.jpg', mensaje: 'Eres mi sol ☀️' },
+    { url: 'fotos/caramelito4.jpg', mensaje: 'Te elijo a ti 💝' },
+    { url: 'fotos/caramelito3.jpg', mensaje: 'Mi persona favorita 💫' },
+    { url: 'fotos/caramelito2.jpg', mensaje: 'Juntos por siempre 🤍' }
+];
 
-            // ===== SISTEMA DE FOTOS CON IMÁGENES PERSONALES =====
-            let photos = [];
-            const textureLoader = new THREE.TextureLoader();
-            
-            function createPhotoWithImage(x, y, z, fotoData, side) {
-                const group = new THREE.Group();
-                
-                // Marco de la foto
-                const frameMat = new THREE.MeshStandardMaterial({ color: 0xff69b4 });
-                const frame = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 0.3), frameMat);
-                frame.position.set(0, 0, 0);
-                frame.castShadow = true;
-                group.add(frame);
-                
-                // Fondo blanco
-                const photoMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-                const photoBg = new THREE.Mesh(new THREE.BoxGeometry(2.6, 3.2, 0.2), photoMat);
-                photoBg.position.set(0, 0, 0.15);
-                group.add(photoBg);
-                
-                // Cargar imagen personal
-                textureLoader.load(
-                    fotoData.url,
-                    (texture) => {
-                        texture.colorSpace = THREE.SRGBColorSpace;
-                        const imgMat = new THREE.MeshStandardMaterial({ 
-                            map: texture,
-                            transparent: true 
-                        });
-                        const imgMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), imgMat);
-                        imgMesh.position.set(0, 0, 0.2);
-                        group.add(imgMesh);
-                    },
-                    undefined,
-                    (err) => {
-                        console.warn('⚠️ No se pudo cargar la imagen:', fotoData.url);
-                        // Fallback: mostrar color rosa si falla la imagen
-                        const fallbackMat = new THREE.MeshStandardMaterial({ color: 0xffb6c1 });
-                        const fallbackMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), fallbackMat);
-                        fallbackMesh.position.set(0, 0, 0.2);
-                        group.add(fallbackMesh);
-                    }
-                );
-                
-                group.position.set(x, y, z);
-                group.userData = {
-                    originalY: y,
-                    message: fotoData.mensaje,
-                    side: side
-                };
-                
-                return group;
+        // ===== SISTEMA DE FOTOS CON MEJORAS DE DEBUG =====
+let photos = [];
+const textureLoader = new THREE.TextureLoader();
+
+function createPhotoWithImage(x, y, z, fotoData, side) {
+    const group = new THREE.Group();
+    
+    // Marco rosado
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0xff69b4 });
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 0.3), frameMat);
+    frame.position.set(0, 0, 0);
+    frame.castShadow = true;
+    group.add(frame);
+
+    // Fondo blanco - AHORA ES UN PLANO, NO UNA CAJA
+    const photoMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff,
+        side: THREE.DoubleSide
+    });
+    const photoBg = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.6, 3.2),  // PLANO en vez de Box
+        photoMat
+    );
+    photoBg.position.set(0, 0, 0.1);  // Ligeramente detrás del marco
+    group.add(photoBg);
+
+    // Cargar la imagen
+    console.log('🔍 Buscando imagen en:', fotoData.url);
+    textureLoader.load(
+        fotoData.url,
+        (texture) => {
+            console.log('✅ ÉXITO:', fotoData.url);
+            if (texture.colorSpace !== undefined) {
+                texture.colorSpace = THREE.SRGBColorSpace;
             }
+            const imgMat = new THREE.MeshStandardMaterial({
+                map: texture,
+                transparent: true,
+                side: THREE.DoubleSide,
+                depthTest: true,
+                depthWrite: false  // EVITA conflictos de profundidad
+            });
+            
+            // Remover imagen anterior si existe
+            const oldImg = group.getObjectByName('foto-imagen');
+            if(oldImg) group.remove(oldImg);
+            
+            // Crear la imagen - AHORA MÁS ADELANTE DEL FONDO
+            const imgMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.4, 3),
+                imgMat
+            );
+            imgMesh.name = 'foto-imagen';
+            imgMesh.position.set(0, 0, 0.25);  // MÁS ADELANTE (antes 0.2)
+            imgMesh.renderOrder = 1;  // Se renderiza DESPUÉS del fondo
+            group.add(imgMesh);
+        },
+        undefined,
+        (err) => {
+            console.warn('⚠️ No se pudo cargar:', fotoData.url, err);
+            // Fallback rosado
+            const fallbackMat = new THREE.MeshStandardMaterial({
+                color: 0xffb6c1,
+                transparent: true,
+                opacity: 0.8,
+                side: THREE.DoubleSide
+            });
+            const fallbackMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.4, 3),
+                fallbackMat
+            );
+            fallbackMesh.name = 'foto-fallback';
+            fallbackMesh.position.set(0, 0, 0.25);
+            fallbackMesh.renderOrder = 1;
+            group.add(fallbackMesh);
+        }
+    );
+    
+    group.position.set(x, y, z);
+    group.userData = {
+        originalY: y,
+        message: fotoData.mensaje,
+        side: side
+    };
+    return group;
+}
 
             // ===== PLATAFORMAS Y CHECKPOINTS =====
             let platforms = [];
             let checkpoints = [];
             let currentCheckpoint = new THREE.Vector3(0, 2.3, 0);
             let currentLevel = 1;
+            
+            let gameWon = false;
+            let levelCompleted = false;
 
-            // ✅ FIX: Plataformas MÁS GRANDES para no caerse fácilmente
-            const PLATFORM_WIDTH = 6;   // Antes era 3
-            const PLATFORM_DEPTH = 6;   // Antes era 3
+            // ===== CONFIGURACIÓN DE NIVELES =====
+            const LEVEL_CONFIGS = [
+                { 
+                    id: 1,
+                    name: '🌸 Camino de Flores', 
+                    platforms: 12, 
+                    spacing: 8, 
+                    difficulty: 'fácil',
+                    bgColor: 0x87CEEB,
+                    platformColor: 0xff69b4,
+                    startColor: 0x4a90e2,
+                    endColor: 0xffaa00,
+                    photoOffset: 9,
+                    photoHeight: 4
+                },
+                { 
+                    id: 2,
+                    name: '🌙 Noche Estrellada', 
+                    platforms: 14, 
+                    spacing: 7, 
+                    difficulty: 'medio',
+                    bgColor: 0x1a1a3e,
+                    platformColor: 0x9b59b6,
+                    startColor: 0x34495e,
+                    endColor: 0xf1c40f,
+                    photoOffset: 8,
+                    photoHeight: 5,
+                    hasMoving: true
+                },
+                { 
+                    id: 3,
+                    name: '🌈 Arcoíris Mágico', 
+                    platforms: 16, 
+                    spacing: 6, 
+                    difficulty: 'difícil',
+                    bgColor: 0xffe4e1,
+                    platformColor: 0xff1493,
+                    startColor: 0xff69b4,
+                    endColor: 0xff4500,
+                    photoOffset: 7,
+                    photoHeight: 6,
+                    hasMoving: true,
+                    hasDisappearing: true
+                },
+                { 
+                    id: 4,
+                    name: '💫 Galaxia de Amor', 
+                    platforms: 18, 
+                    spacing: 5, 
+                    difficulty: 'experto',
+                    bgColor: 0x0f0f2e,
+                    platformColor: 0x00ffff,
+                    startColor: 0x4b0082,
+                    endColor: 0xffd700,
+                    photoOffset: 6,
+                    photoHeight: 7,
+                    hasMoving: true,
+                    hasDisappearing: true,
+                    hasNarrow: true
+                },
+                { 
+                    id: 5,
+                    name: '💖 Meta del Amor Eterno', 
+                    platforms: 10, 
+                    spacing: 9, 
+                    difficulty: 'final',
+                    bgColor: 0xff1493,
+                    platformColor: 0xffffff,
+                    startColor: 0xff69b4,
+                    endColor: 0xffd700,
+                    photoOffset: 10,
+                    photoHeight: 5,
+                    isFinal: true
+                }
+            ];
+
+            const PLATFORM_WIDTH = 6;
+            const PLATFORM_DEPTH = 6;
             const PLATFORM_HEIGHT = 0.5;
-            const PLATFORM_SPACING = 8; // Distancia entre plataformas (antes 6)
 
-            function createPlatform(x, y, z, w, h, d, color, isCheckpoint = false) {
+            function createPlatform(x, y, z, w, h, d, color, isCheckpoint = false, isMoving = false, isDisappearing = false, isNarrow = false) {
                 const material = new THREE.MeshStandardMaterial({ 
                     color: color,
-                    emissive: isCheckpoint ? 0x331100 : 0x000000
+                    emissive: isCheckpoint ? 0x331100 : 0x000000,
+                    transparent: isDisappearing,
+                    opacity: isDisappearing ? 0.7 : 1
                 });
                 
-                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+                const width = isNarrow ? w * 0.6 : w;
+                const depth = isNarrow ? d * 0.6 : d;
+                
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, h, depth), material);
                 mesh.position.set(x, y, z);
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
+                
+                if(isMoving) {
+                    mesh.userData = {
+                        isMoving: true,
+                        originalX: x,
+                        originalZ: z,
+                        moveRange: 3,
+                        moveSpeed: 0.02 + Math.random() * 0.03,
+                        axis: Math.random() > 0.5 ? 'x' : 'z',
+                        phase: Math.random() * Math.PI * 2
+                    };
+                }
+                
+                if(isDisappearing) {
+                    mesh.userData = {
+                        ...mesh.userData,
+                        isDisappearing: true,
+                        visibleTime: 2000,
+                        hiddenTime: 1500,
+                        lastToggle: Date.now(),
+                        isVisible: true
+                    };
+                }
+                
                 scene.add(mesh);
                 platforms.push(mesh);
 
@@ -428,7 +623,7 @@
                         transparent: true, 
                         opacity: 0.3 
                     });
-                    const glow = new THREE.Mesh(new THREE.BoxGeometry(w + 0.4, h + 0.4, d + 0.4), glowMat);
+                    const glow = new THREE.Mesh(new THREE.BoxGeometry(width + 0.4, h + 0.4, depth + 0.4), glowMat);
                     glow.position.set(x, y, z);
                     scene.add(glow);
                 }
@@ -436,59 +631,162 @@
                 return mesh;
             }
 
-            // ===== CONSTRUIR NIVEL CON PLATAFORMAS MÁS GRANDES =====
-            function buildLevel(level) {
-                // Limpiar plataformas y fotos anteriores
+            // ===== ACTUALIZAR PLATAFORMAS ESPECIALES =====
+            function updateSpecialPlatforms() {
+                const time = Date.now();
+                
+                platforms.forEach(platform => {
+                    const data = platform.userData;
+                    
+                    if(data?.isMoving) {
+                        const offset = Math.sin(time * data.moveSpeed + data.phase) * data.moveRange;
+                        if(data.axis === 'x') {
+                            platform.position.x = data.originalX + offset;
+                        } else {
+                            platform.position.z = data.originalZ + offset;
+                        }
+                    }
+                    
+                    if(data?.isDisappearing) {
+                        if(data.isVisible) {
+                            if(time - data.lastToggle > data.visibleTime) {
+                                data.isVisible = false;
+                                data.lastToggle = time;
+                                platform.visible = false;
+                                platform.material.opacity = 0.2;
+                            }
+                        } else {
+                            if(time - data.lastToggle > data.hiddenTime) {
+                                data.isVisible = true;
+                                data.lastToggle = time;
+                                platform.visible = true;
+                                platform.material.opacity = 0.7;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ===== CONSTRUIR NIVEL =====
+            function buildLevel(levelConfig) {
                 platforms.forEach(p => scene.remove(p));
                 photos.forEach(p => scene.remove(p));
+                checkpoints.forEach(cp => {
+                    if(cp.mesh?.userData?.glow) scene.remove(cp.mesh.userData.glow);
+                });
                 platforms = [];
                 checkpoints = [];
                 photos = [];
                 
-                const totalPlatforms = 12; // ✅ MÁS plataformas con fotos
+                scene.background = new THREE.Color(levelConfig.bgColor);
+                scene.fog = new THREE.Fog(levelConfig.bgColor, 100, 350);
+                
+                const totalPlatforms = levelConfig.platforms;
+                const spacing = levelConfig.spacing;
                 const startX = 0;
                 
-                // ✅ Plataforma inicial MÁS GRANDE (checkpoint)
-                createPlatform(startX, 1, 0, 8, 0.5, 8, 0x4a90e2, true);
+                createPlatform(startX, 1, 0, 8, 0.5, 8, levelConfig.startColor, true);
                 
-                // 📸 CREAR PLATAFORMAS CON FOTOS A LOS LADOS
                 for(let i = 1; i <= totalPlatforms; i++) {
-                    const x = i * PLATFORM_SPACING;
-                    // Variación suave de altura para hacerlo interesante pero no imposible
-                    const y = 1 + Math.sin(i * 0.5) * 0.8; 
+                    const x = i * spacing;
+                    const y = 1 + Math.sin(i * 0.5) * (levelConfig.difficulty === 'fácil' ? 0.5 : 1.2);
                     const z = 0;
                     
-                    // ✅ Plataforma más grande y estable
-                    createPlatform(x, y, z, PLATFORM_WIDTH, PLATFORM_HEIGHT, PLATFORM_DEPTH, 0xff69b4);
+                    const isMoving = levelConfig.hasMoving && i % 3 === 0;
+                    const isDisappearing = levelConfig.hasDisappearing && i % 4 === 0;
+                    const isNarrow = levelConfig.hasNarrow && i % 5 === 0;
                     
-                    // 🎯 Fotos alternadas: izquierda/derecha, LEJOS del camino
-                    const sideOffset = (i % 2 === 0) ? 9 : -9; // ✅ Más lejos para no estorbar
+                    createPlatform(
+                        x, y, z, 
+                        PLATFORM_WIDTH, PLATFORM_HEIGHT, PLATFORM_DEPTH, 
+                        levelConfig.platformColor,
+                        false,
+                        isMoving,
+                        isDisappearing,
+                        isNarrow
+                    );
+                    
+                    const sideOffset = (i % 2 === 0) ? levelConfig.photoOffset : -levelConfig.photoOffset;
                     const photoX = x;
-                    const photoY = y + 4; // ✅ Más arriba para mejor visión
+                    const photoY = y + levelConfig.photoHeight;
                     const photoZ = sideOffset;
                     
-                    // Usar una de las fotos personales
-                    const fotoData = MIS_FOTOS[(i - 1) % MIS_FOTOS.length];
+                    const fotoData = MIS_FOTOS[(i - 1 + (currentLevel - 1) * 3) % MIS_FOTOS.length];
                     const photo = createPhotoWithImage(photoX, photoY, photoZ, fotoData, sideOffset > 0 ? 'right' : 'left');
                     scene.add(photo);
                     photos.push(photo);
                 }
                 
-                // ✅ Plataforma final MÁS GRANDE
-                const endX = totalPlatforms * PLATFORM_SPACING;
-                createPlatform(endX, 2, 0, 8, 0.5, 8, 0xffaa00, true);
+                const endX = totalPlatforms * spacing;
+                createPlatform(endX, 2, 0, 8, 0.5, 8, levelConfig.endColor, true);
                 
-                // Corazón gigante en la meta
-                const heartMat = new THREE.MeshStandardMaterial({ color: 0xff1493, emissive: 0x440022 });
-                const heart = new THREE.Mesh(new THREE.SphereGeometry(2.5, 16), heartMat);
-                heart.position.set(endX, 6, 0);
-                scene.add(heart);
+                if(levelConfig.isFinal) {
+                    const heartMat = new THREE.MeshStandardMaterial({ 
+                        color: 0xff1493, 
+                        emissive: 0x440022,
+                        transparent: true,
+                        opacity: 0.9
+                    });
+                    const heart = new THREE.Mesh(new THREE.SphereGeometry(3, 24), heartMat);
+                    heart.position.set(endX, 7, 0);
+                    heart.scale.set(1, 1.2, 1);
+                    scene.add(heart);
+                    
+                    for(let i = 0; i < 20; i++) {
+                        const star = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.3, 8),
+                            new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffaa })
+                        );
+                        const angle = (i / 20) * Math.PI * 2;
+                        star.position.set(
+                            endX + Math.cos(angle) * 5,
+                            7 + Math.sin(angle * 3) * 2,
+                            Math.sin(angle) * 5
+                        );
+                        scene.add(star);
+                    }
+                } else {
+                    const heartMat = new THREE.MeshStandardMaterial({ color: levelConfig.endColor, emissive: 0x221100 });
+                    const heart = new THREE.Mesh(new THREE.SphereGeometry(2.5, 16), heartMat);
+                    heart.position.set(endX, 6, 0);
+                    scene.add(heart);
+                }
                 
-                document.getElementById('level').innerText = level;
-                document.getElementById('level-display').innerText = `🌸 NIVEL ${level}`;
+                document.getElementById('level').innerText = levelConfig.id;
+                document.getElementById('level-display').innerText = levelConfig.name;
+                document.getElementById('total-levels').innerText = LEVEL_CONFIGS.length;
             }
 
-            buildLevel(1);
+            // ===== CARGAR NIVEL =====
+            function loadLevel(levelNumber) {
+                const config = LEVEL_CONFIGS.find(l => l.id === levelNumber) || LEVEL_CONFIGS[0];
+                currentLevel = levelNumber;
+                gameWon = false;
+                levelCompleted = false;
+                
+                player.mesh.position.set(0, 2.3, 0);
+                player.velocity.set(0, 0, 0);
+                currentCheckpoint = new THREE.Vector3(0, 2.3, 0);
+                
+                buildLevel(config);
+            }
+
+            // ===== SIGUIENTE NIVEL =====
+            function goToNextLevel() {
+                if(currentLevel < LEVEL_CONFIGS.length) {
+                    document.getElementById('level-complete').classList.remove('show');
+                    loadLevel(currentLevel + 1);
+                    
+                    const msg = document.getElementById('checkpoint-msg');
+                    msg.classList.add('show');
+                    setTimeout(() => msg.classList.remove('show'), 1000);
+                } else {
+                    alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
+                    loadLevel(1);
+                }
+            }
+
+            loadLevel(1);
 
             // ===== CONTROLES =====
             const keys = {};
@@ -500,12 +798,8 @@
                 keys[e.code] = true; 
                 if(e.code.startsWith('Arrow')) e.preventDefault();
                 
-                if(e.code === 'KeyO') {
-                    camZoom = Math.max(camZoomMin, camZoom - 2);
-                }
-                if(e.code === 'KeyI') {
-                    camZoom = Math.min(camZoomMax, camZoom + 2);
-                }
+                if(e.code === 'KeyO') camZoom = Math.max(camZoomMin, camZoom - 2);
+                if(e.code === 'KeyI') camZoom = Math.min(camZoomMax, camZoom + 2);
             });
             window.addEventListener('keyup', (e) => { 
                 keys[e.code] = false; 
@@ -523,11 +817,13 @@
                 renderer.domElement.requestPointerLock();
             });
 
-            // ===== FUNCIÓN DE REINICIO =====
             window.restartFromCheckpoint = function() {
+                if(gameWon || levelCompleted) return;
                 player.mesh.position.copy(currentCheckpoint);
                 player.velocity.set(0, 0, 0);
             };
+
+            document.getElementById('next-level-btn').addEventListener('click', goToNextLevel);
 
             // ===== ANIMACIÓN PRINCIPAL =====
             const clock = new THREE.Clock();
@@ -535,79 +831,73 @@
             function animate() {
                 const dt = Math.min(clock.getDelta(), 0.1);
 
-                // 🪲 DEBUG CONSOLE
-                if(window.debugMode) {
-                    console.log(`📍 Player Y: ${player.mesh.position.y.toFixed(2)} | Vel Y: ${player.velocity.y.toFixed(2)} | onGround: ${player.onGround}`);
-                }
+                if(!gameWon && !levelCompleted) {
+                    const move = new THREE.Vector3();
+                    if(keys['KeyW'] || keys['ArrowUp']) move.z -= 1;
+                    if(keys['KeyS'] || keys['ArrowDown']) move.z += 1;
+                    if(keys['KeyA'] || keys['ArrowLeft']) move.x -= 1;
+                    if(keys['KeyD'] || keys['ArrowRight']) move.x += 1;
 
-                // 🎮 MOVIMIENTO
-                const move = new THREE.Vector3();
-                if(keys['KeyW'] || keys['ArrowUp']) move.z -= 1;
-                if(keys['KeyS'] || keys['ArrowDown']) move.z += 1;
-                if(keys['KeyA'] || keys['ArrowLeft']) move.x -= 1;
-                if(keys['KeyD'] || keys['ArrowRight']) move.x += 1;
-
-                if(move.length() > 0.1) {
-                    move.normalize();
-                    const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
-                    const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
-                    
-                    const desiredVelocity = new THREE.Vector3()
-                        .copy(forward.multiplyScalar(-move.z))
-                        .add(right.multiplyScalar(move.x))
-                        .normalize()
-                        .multiplyScalar(player.speed);
-                    
-                    player.velocity.x += (desiredVelocity.x - player.velocity.x) * 12 * dt;
-                    player.velocity.z += (desiredVelocity.z - player.velocity.z) * 12 * dt;
-                    
-                    const targetRot = Math.atan2(desiredVelocity.x, desiredVelocity.z);
-                    player.mesh.rotation.y += (targetRot - player.mesh.rotation.y) * 0.2;
-                } else {
-                    player.velocity.x *= 0.85;
-                    player.velocity.z *= 0.85;
-                    if(Math.abs(player.velocity.x) < 0.1) player.velocity.x = 0;
-                    if(Math.abs(player.velocity.z) < 0.1) player.velocity.z = 0;
-                }
-
-                // 🪂 GRAVEDAD
-                player.velocity.y -= 40 * dt;
-
-                // ✅ DETECCIÓN DE SUELO MEJORADA
-                const rayOrigin = player.mesh.position.clone();
-                rayOrigin.y += player.footOffset;
-                const raycaster = new THREE.Raycaster(rayOrigin, new THREE.Vector3(0, -1, 0), 0, 2.5);
-                const intersects = raycaster.intersectObjects(platforms);
-
-                player.onGround = intersects.length > 0 && player.velocity.y <= 0.1;
-
-                if(player.onGround) {
-                    const groundY = intersects[0].point.y + player.footOffset;
-                    
-                    if(Math.abs(player.mesh.position.y - groundY) > 0.05) {
-                        player.mesh.position.y = THREE.MathUtils.lerp(player.mesh.position.y, groundY, 0.25);
+                    if(move.length() > 0.1) {
+                        move.normalize();
+                        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
+                        const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.camH);
+                        
+                        const desiredVelocity = new THREE.Vector3()
+                            .copy(forward.multiplyScalar(-move.z))
+                            .add(right.multiplyScalar(move.x))
+                            .normalize()
+                            .multiplyScalar(player.speed);
+                        
+                        player.velocity.x += (desiredVelocity.x - player.velocity.x) * 12 * dt;
+                        player.velocity.z += (desiredVelocity.z - player.velocity.z) * 12 * dt;
+                        
+                        const targetRot = Math.atan2(desiredVelocity.x, desiredVelocity.z);
+                        player.mesh.rotation.y += (targetRot - player.mesh.rotation.y) * 0.2;
+                    } else {
+                        player.velocity.x *= 0.85;
+                        player.velocity.z *= 0.85;
+                        if(Math.abs(player.velocity.x) < 0.1) player.velocity.x = 0;
+                        if(Math.abs(player.velocity.z) < 0.1) player.velocity.z = 0;
                     }
-                    
-                    if(player.velocity.y < 0) {
-                        player.velocity.y = THREE.MathUtils.lerp(player.velocity.y, 0, 0.4);
+
+                    player.velocity.y -= 40 * dt;
+
+                    const rayOrigin = player.mesh.position.clone();
+                    rayOrigin.y += player.footOffset;
+                    const raycaster = new THREE.Raycaster(rayOrigin, new THREE.Vector3(0, -1, 0), 0, 2.5);
+                    const intersects = raycaster.intersectObjects(platforms.filter(p => p.visible !== false));
+
+                    player.onGround = intersects.length > 0 && player.velocity.y <= 0.1;
+
+                    if(player.onGround) {
+                        const groundY = intersects[0].point.y + player.footOffset;
+                        
+                        if(Math.abs(player.mesh.position.y - groundY) > 0.05) {
+                            player.mesh.position.y = THREE.MathUtils.lerp(player.mesh.position.y, groundY, 0.25);
+                        }
+                        
+                        if(player.velocity.y < 0) {
+                            player.velocity.y = THREE.MathUtils.lerp(player.velocity.y, 0, 0.4);
+                        }
+                        
+                        if(keys['Space'] && Math.abs(player.velocity.y) < 0.3 && Math.abs(player.velocity.x) < 0.5 && Math.abs(player.velocity.z) < 0.5) {
+                            player.velocity.y = player.jumpForce;
+                            player.onGround = false;
+                        }
                     }
-                    
-                    if(keys['Space'] && Math.abs(player.velocity.y) < 0.3 && Math.abs(player.velocity.x) < 0.5 && Math.abs(player.velocity.z) < 0.5) {
-                        player.velocity.y = player.jumpForce;
-                        player.onGround = false;
-                        if(window.debugMode) console.log("🦘 JUMP!");
+
+                    player.mesh.position.x += player.velocity.x * dt;
+                    player.mesh.position.y += player.velocity.y * dt;
+                    player.mesh.position.z += player.velocity.z * dt;
+
+                    if(player.mesh.position.y < -20) {
+                        window.restartFromCheckpoint();
                     }
                 }
 
-                player.mesh.position.x += player.velocity.x * dt;
-                player.mesh.position.y += player.velocity.y * dt;
-                player.mesh.position.z += player.velocity.z * dt;
+                updateSpecialPlatforms();
 
-                if(player.mesh.position.y < -20) {
-                    window.restartFromCheckpoint();
-                }
-
-                // ===== FOTOS =====
                 photos.forEach(photo => {
                     const dist = player.mesh.position.distanceTo(photo.position);
                     if(dist < 20) {
@@ -618,7 +908,6 @@
                     }
                 });
 
-                // ===== CÁMARA =====
                 const camOffset = new THREE.Vector3(
                     Math.sin(player.camH) * Math.cos(player.camV) * camZoom,
                     3 + Math.sin(player.camV) * 5,
@@ -628,7 +917,6 @@
                 camera.position.copy(player.mesh.position).add(camOffset);
                 camera.lookAt(player.mesh.position.clone().add(new THREE.Vector3(0, 2, 0)));
 
-                // ===== CHECKPOINTS =====
                 checkpoints.forEach(cp => {
                     const dist = player.mesh.position.distanceTo(cp.pos);
                     if(dist < 3) {
@@ -641,22 +929,37 @@
                     }
                 });
 
-                // ===== META =====
-                const endX = totalPlatforms * PLATFORM_SPACING;
-                const distToFinish = player.mesh.position.distanceTo(new THREE.Vector3(endX, 2, 0));
-                if(distToFinish < 5) {
-                    alert("💕 ¡FELICIDADES! Llegaste a la meta. Te amo 💕");
-                    window.restartFromCheckpoint();
+                if(!gameWon && !levelCompleted) {
+                    const levelConfig = LEVEL_CONFIGS.find(l => l.id === currentLevel);
+                    if(levelConfig) {
+                        const endX = levelConfig.platforms * levelConfig.spacing;
+                        const distToFinish = player.mesh.position.distanceTo(new THREE.Vector3(endX, 2, 0));
+
+                        if(distToFinish < 5) {
+                            if(levelConfig.isFinal) {
+                                gameWon = true;
+                                player.velocity.set(0, 0, 0);
+                                Object.keys(keys).forEach(key => keys[key] = false);
+                                alert("💕💕💕 ¡FELICIDADES! ¡Completaste todos los niveles! ¡Te amo para siempre! 💕💕💕");
+                                setTimeout(() => loadLevel(1), 3000);
+                            } else {
+                                levelCompleted = true;
+                                player.velocity.set(0, 0, 0);
+                                Object.keys(keys).forEach(key => keys[key] = false);
+                                
+                                const completeMsg = document.getElementById('level-complete');
+                                const nextLevel = LEVEL_CONFIGS.find(l => l.id === currentLevel + 1);
+                                document.getElementById('next-level-name').innerText = nextLevel ? `Próximo: ${nextLevel.name}` : '¡Juego Completado!';
+                                completeMsg.classList.add('show');
+                            }
+                        }
+                    }
                 }
 
                 renderer.render(scene, camera);
                 requestAnimationFrame(animate);
             }
 
-            // Necesario para que funcione la variable totalPlatforms en animate()
-            const totalPlatforms = 12;
-
-            // ===== REDIMENSIONAR =====
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
