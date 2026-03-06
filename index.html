@@ -12,6 +12,10 @@
             --ink: #3e2723;
             --love-red: #b71c1c;
             --gold: #b8860b;
+            --win95-gray: #c0c0c0;
+            --win95-dark: #808080;
+            --win95-darker: #0a0a0a;
+            --win95-blue: #000080;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,7 +41,6 @@
             transition: opacity 1s ease, visibility 1s;
         }
 
-        /* Estrellas de fondo */
         .stars { position: fixed; width: 100%; height: 100%; z-index: -1; }
         .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
@@ -72,17 +75,16 @@
             box-shadow: 0 0 30px var(--gold);
         }
 
-     .stage {
+        .stage {
             display: none;
             width: 100vw; height: 100vh;
-            background: #000; /* Fondo negro sólido detrás del mapa */
+            background: #000;
             justify-content: center; align-items: center;
         }
 
-       .scene {
+        .scene {
             display: none;
             width: 95%; height: 90%;
-            /* Eliminamos el color vintage y la textura de papel para que se vea tu imagen */
             border: 10px solid var(--ink);
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             position: relative;
@@ -114,10 +116,10 @@
         .active { display: block; }
         .flex-active { display: flex; }
 
-    .map-world { 
+        .map-world { 
             width: 100%; height: 100%; 
             background-image: url('mapa.webp'); 
-            background-size: 100% 100%; /* Fuerza a que encaje exacto en el cuadro */
+            background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
             position: relative; 
@@ -170,7 +172,6 @@
             box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
         }
 
-        /* Utilitarios */
         .back-btn { 
             position: absolute; 
             bottom: 20px; 
@@ -192,54 +193,261 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(184, 134, 11, 0.4);
         }
-        
-        .grid-cartas { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
-            gap: 25px; 
-            padding: 40px; 
-        }
-        
-        /* Tarjetas de cartas con efecto hover elegante */
-        .grid-cartas > div {
-            background: rgba(228, 213, 183, 0.95);
-            border: 2px solid var(--ink);
-            border-radius: 10px;
-            padding: 20px 15px;
-            transition: all 0.3s ease;
-            box-shadow: 4px 4px 0 var(--ink);
-            cursor: pointer;
-        }
-        .grid-cartas > div:hover {
-            transform: translateY(-8px) rotate(2deg);
-            box-shadow: 6px 6px 0 var(--love-red);
-            background: #fff9f0;
-        }
-        .grid-cartas > div:active {
-            transform: translateY(-4px) rotate(1deg);
-        }
-        .grid-cartas .folder-icon {
-            font-size: 3rem; 
-            transition: transform 0.3s;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .grid-cartas > div:hover .folder-icon {
-            transform: scale(1.2) rotate(5deg);
-        }
-        .grid-cartas .card-title {
-            font-weight: 600; 
-            margin: 8px 0 4px;
-            color: var(--ink);
-            font-size: 0.95rem;
-        }
-        .grid-cartas .card-date {
-            color: var(--ink); 
-            opacity: 0.7; 
-            font-size: 0.8rem;
+
+        /* === ESTILOS WINDOWS 95 PARA LA SECCIÓN DE CARTAS === */
+        #scene-letters {
+            background: var(--win95-gray);
+            border: 2px solid;
+            border-color: #ffffff var(--win95-darker) var(--win95-darker) #ffffff;
+            padding: 3px;
+            font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
         }
 
-        /* Firma animada */
+        .win95-title-bar {
+            background: var(--win95-blue);
+            padding: 2px 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .win95-title-text {
+            color: white;
+            font-weight: bold;
+            font-size: 11px;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+        }
+
+        .win95-title-buttons {
+            display: flex;
+            gap: 2px;
+        }
+
+        .win95-btn-title {
+            width: 16px;
+            height: 14px;
+            background: var(--win95-gray);
+            border: 1px solid;
+            border-color: #ffffff var(--win95-darker) var(--win95-darker) #ffffff;
+            font-size: 9px;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-weight: bold;
+            padding: 0;
+            line-height: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .win95-btn-title:active {
+            border-color: var(--win95-darker) #ffffff #ffffff var(--win95-darker);
+        }
+
+        .win95-menu-bar {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            padding: 2px 5px;
+            color: #000;
+            border-bottom: 1px solid var(--win95-dark);
+            margin-bottom: 5px;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+        }
+
+        .win95-menu-item {
+            cursor: default;
+        }
+
+        .win95-menu-item u {
+            text-decoration: underline;
+        }
+
+        .win95-content {
+            background: #ffffff;
+            border: 2px inset var(--win95-dark);
+            height: calc(100% - 75px);
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        /* Icono de carpeta estilo Windows 95 (sin emojis) */
+        .win95-folder-icon {
+            width: 32px;
+            height: 24px;
+            background: #fdf1b8;  /* Color crema de carpeta Win95 */
+            position: relative;
+            margin: 0 auto 8px;
+            border: 1px solid #000;
+            box-shadow: 1px 1px 0 #808080;
+        }
+
+        .win95-folder-icon::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -1px;
+            width: 12px;
+            height: 5px;
+            background: #fdf1b8;
+            border: 1px solid #000;
+            border-bottom: none;
+        }
+
+        .win95-folder-icon-locked {
+            background: #d4d0c8;
+            opacity: 0.7;
+        }
+
+        .win95-folder-icon-locked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: #000080;
+            border-radius: 1px;
+        }
+
+        /* Grid de iconos estilo Win95 */
+        .win95-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .win95-icon-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 5px;
+            border: 1px solid transparent;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+        }
+
+        .win95-icon-item:hover {
+            background: #000080;
+            color: white;
+            border: 1px dotted #ffffff;
+        }
+
+        .win95-icon-item:hover .win95-folder-icon {
+            background: #fff2c0;
+        }
+
+        .win95-icon-title {
+            font-size: 11px;
+            color: #000;
+            word-wrap: break-word;
+            margin-top: 4px;
+        }
+
+        .win95-icon-item:hover .win95-icon-title {
+            color: white;
+        }
+
+        .win95-icon-date {
+            font-size: 9px;
+            color: #666;
+        }
+
+        .win95-icon-item:hover .win95-icon-date {
+            color: #aaccff;
+        }
+
+        /* Modal estilo Win95 */
+        .win95-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            animation: fadeIn 0.2s ease;
+            padding: 20px;
+        }
+
+        .win95-modal {
+            background: var(--win95-gray);
+            border: 2px solid;
+            border-color: #ffffff var(--win95-darker) var(--win95-darker) #ffffff;
+            padding: 2px;
+            min-width: 300px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+        }
+
+        .win95-modal-title {
+            background: var(--win95-blue);
+            color: white;
+            padding: 4px 6px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .win95-modal-close {
+            background: var(--win95-gray);
+            border: 1px solid;
+            border-color: #ffffff var(--win95-darker) var(--win95-darker) #ffffff;
+            width: 18px;
+            height: 16px;
+            font-size: 12px;
+            line-height: 14px;
+            text-align: center;
+            cursor: pointer;
+            color: #000;
+        }
+
+        .win95-modal-close:active {
+            border-color: var(--win95-darker) #ffffff #ffffff var(--win95-darker);
+        }
+
+        .win95-modal-content {
+            background: #ffffff;
+            border: 2px inset var(--win95-dark);
+            padding: 20px;
+            margin: 4px;
+        }
+
+        .win95-modal-text {
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-size: 12px;
+            color: #000;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .win95-modal-signature {
+            font-family: 'Great Vibes', cursive;
+            font-size: 24px;
+            color: var(--love-red);
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .win95-modal-button {
+            background: var(--win95-gray);
+            border: 2px solid;
+            border-color: #ffffff var(--win95-darker) var(--win95-darker) #ffffff;
+            padding: 8px 20px;
+            font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 15px;
+            min-width: 100px;
+        }
+
+        .win95-modal-button:active {
+            border-color: var(--win95-darker) #ffffff #ffffff var(--win95-darker);
+        }
+
+        /* Mantener otros estilos existentes */
         .firma {
             font-family: 'Great Vibes', cursive;
             font-size: 2.5rem;
@@ -256,7 +464,6 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Canvas del juego */
         #game-canvas {
             background: linear-gradient(180deg, #e4d5b7 0%, #c9b896 100%);
             display: block; 
@@ -265,45 +472,7 @@
             border-radius: 5px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-/* Botones de la barra de título */
-.win95-btn-title {
-    width: 16px; height: 14px; background: #c0c0c0;
-    border: 1px solid; border-color: #fff #0a0a0a #0a0a0a #fff;
-    font-size: 9px; font-family: sans-serif; font-weight: bold; padding: 0;
-}
 
-/* Carpeta estilo Win95 (Sin Emojis) */
-.win95-folder {
-    width: 32px; height: 24px;
-    background: #fdf1b8; /* Color crema pálido */
-    position: relative;
-    margin: 0 auto 10px;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #000;
-}
-.win95-folder::before {
-    content: ''; position: absolute; top: -5px; left: -1px;
-    width: 12px; height: 5px; background: #fdf1b8;
-    border: 1px solid #808080; border-bottom: none;
-}
-
-/* Reajuste del contenedor de iconos */
-#cartas-container div {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: 80px !important;
-    text-align: center;
-}
-
-#cartas-container .card-title {
-    font-family: 'Tahoma', sans-serif !important;
-    font-size: 11px !important;
-    color: #000 !important;
-    margin-top: 5px;
-    word-wrap: break-word;
-}
-        /* Partículas flotantes */
         #particles {
             position: fixed; 
             inset: 0; 
@@ -311,7 +480,6 @@
             z-index: 5;
         }
 
-        /* Animaciones globales */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { 
             from { transform: translateY(30px); opacity: 0; } 
@@ -330,7 +498,6 @@
             }
         }
 
-        /* Responsive Móvil */
         @media (max-width: 768px) {
             .splash-content h1 { font-size: 3rem; letter-spacing: 5px; }
             .btn-entrar { padding: 12px 30px; font-size: 1.2rem; }
@@ -339,10 +506,9 @@
             .marker .x-mark { font-size: 2.2rem; }
             .marker .label { font-size: 0.75rem; padding: 3px 8px; }
             
-            .grid-cartas { 
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-                padding: 20px; 
-                gap: 15px;
+            .win95-icon-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
+                gap: 10px;
             }
             
             #game-canvas { 
@@ -367,7 +533,7 @@
 
         @media (max-width: 480px) {
             .splash-content h1 { font-size: 2.5rem; }
-            .grid-cartas { grid-template-columns: repeat(2, 1fr); }
+            .win95-icon-grid { grid-template-columns: repeat(2, 1fr); }
             .firma { font-size: 2rem; bottom: 20px; right: 20px; }
         }
     </style>
@@ -398,43 +564,47 @@
                 
                 <div class="marker" style="top: 20%; left: 20%;" onclick="openScene('scene-letters')">
                     <div class="x-mark">X</div>
-                    <div class="label">¿?</div>
+                    <div class="label">Cartas</div>
                 </div>
 
                 <div class="marker" style="top: 50%; left: 50%;" onclick="window.location.href='obbi.html'">
                     <div class="x-mark">X</div>
-                    <div class="label">¿?</div>
+                    <div class="label">Obbie</div>
                 </div>
 
                 <div class="marker" style="top: 70%; left: 80%;" onclick="window.location.href='scrapbook.html'">
                     <div class="x-mark">X</div>
-                    <div class="label">¿?</div>
+                    <div class="label">Recuerdos</div>
                 </div>
 
                 <div class="firma">Niurka ♾️</div>
             </div>
         </div>
 
-       <div id="scene-letters" class="scene" style="background: #c0c0c0; border: 2px solid; border-color: #dfdfdf #0a0a0a #0a0a0a #dfdfdf; padding: 3px; font-family: 'MS Sans Serif', 'Tahoma', sans-serif;">
-    <div style="background: #000080; padding: 2px 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <div class="win95-icon-small"></div>
-            <span style="color: white; font-weight: bold; font-size: 11px;">Explorando - C:\RECUERDOS\CARTAS</span>
-        </div>
-        <div style="display: flex; gap: 2px;">
-            <button class="win95-btn-title">?</button>
-            <button onclick="openScene('scene-map')" class="win95-btn-title">X</button>
-        </div>
-    </div>
+        <!-- Escena: Cartas con estilo Windows 95 (CORREGIDO) -->
+        <div id="scene-letters" class="scene">
+            <!-- Barra de título Win95 -->
+            <div class="win95-title-bar">
+                <div class="win95-title-text">Explorando - C:\RECUERDOS\CARTAS</div>
+                <div class="win95-title-buttons">
+                    <button class="win95-btn-title" onclick="mostrarAyuda()">?</button>
+                    <button class="win95-btn-title" onclick="openScene('scene-map')">X</button>
+                </div>
+            </div>
 
-    <div style="display: flex; gap: 10px; font-size: 11px; padding: 2px 5px; color: #000; border-bottom: 1px solid #808080; margin-bottom: 5px;">
-        <span><u>A</u>rchivo</span><span><u>E</u>dición</span><span><u>V</u>er</span><span><u>A</u>yuda</span>
-    </div>
+            <!-- Barra de menú Win95 -->
+            <div class="win95-menu-bar">
+                <span class="win95-menu-item"><u>A</u>rchivo</span>
+                <span class="win95-menu-item"><u>E</u>dición</span>
+                <span class="win95-menu-item"><u>V</u>er</span>
+                <span class="win95-menu-item"><u>A</u>yuda</span>
+            </div>
 
-    <div style="background: #ffffff; border: 2px inset #808080; height: calc(100% - 75px); overflow-y: auto; padding: 15px;">
-        <div class="grid-cartas" id="cartas-container"></div>
-    </div>
-</div>
+            <!-- Contenido con iconos de carpetas Win95 -->
+            <div class="win95-content" id="cartas-container">
+                <!-- Las cartas se renderizarán aquí con JavaScript -->
+            </div>
+        </div>
 
         <!-- Escena: Minijuego -->
         <div id="scene-game" class="scene">
@@ -488,7 +658,6 @@
                 splash.style.display = 'none';
                 stage.style.display = 'flex';
                 
-                // Iniciar partículas mágicas
                 setTimeout(createParticles, 500);
             }, 1000);
         }
@@ -497,186 +666,146 @@
         // 🗺️ 3. NAVEGACIÓN ENTRE ESCENAS
         // ============================================
         function openScene(id) {
-            // Ocultar todas las escenas
             document.querySelectorAll('.scene').forEach(s => {
                 s.classList.remove('active');
                 s.style.display = 'none';
             });
             
-            // Mostrar la escena seleccionada
             const target = document.getElementById(id);
             target.style.display = 'block';
             setTimeout(() => target.classList.add('active'), 10);
             
-            // Lógica específica por escena
-            if(id === 'scene-letters') renderCartas();
+            if(id === 'scene-letters') renderCartasWin95();
             if(id === 'scene-game') startObbie();
         }
 
         // ============================================
-        // 💌 4. SISTEMA DE CARTAS CON MODAL ELEGANTE
+        // 💌 4. FUNCIÓN DE AYUDA PARA WIN95
+        // ============================================
+        function mostrarAyuda() {
+            alert('Windows 95 - Ayuda\n\nEsta carpeta contiene cartas especiales.\nLas carpetas con candado no están disponibles aún.');
+        }
+
+        // ============================================
+        // 💌 5. SISTEMA DE CARTAS CON ESTILO WIN95
         // ============================================
         const misCartas = [
             { 
-                title: "Estés feliz ☀️", 
-                date: "2024-01-01", 
-                msg: "¡Amo verte sonreír! Cada vez que tu risa llena el espacio, mi mundo se ilumina como mil estrellas. Eres mi razón para creer en la magia. 💫" 
+                title: "Estés feliz", 
+                date: "2026-03-13", 
+                msg: "¡Amo verte sonreír! Cada vez que tu risa llena el espacio, mi mundo se ilumina como mil estrellas. Eres mi razón para creer en la magia." 
             },
             { 
-                title: "Me extrañes 💭", 
-                date: "2024-05-13", 
-                msg: "Estoy a solo un mensaje. No importa la distancia, mi corazón siempre está contigo. Te pienso en cada amanecer y en cada suspiro. ❤️" 
+                title: "Me extrañes", 
+                date: "2026-03-13", 
+                msg: "Estoy a solo un mensaje. No importa la distancia, mi corazón siempre está contigo. Te pienso en cada amanecer y en cada suspiro." 
             },
             { 
-                title: "Aniversario Proximo :)", 
+                title: "Aniversario Proximo", 
                 date: "2026-12-13", 
-                msg: "¡Sempiternos! Cada momento a tu lado es un tesoro que guardo en el alma. Gracias por elegirme, por quedarte, por amarme. Eres mi eternidad. 🌹" 
+                msg: "¡Sempiternos! Cada momento a tu lado es un tesoro que guardo en el alma. Gracias por elegirme, por quedarte, por amarme. Eres mi eternidad." 
             }
         ];
 
-        function renderCartas() {
+        function renderCartasWin95() {
             const container = document.getElementById('cartas-container');
             container.innerHTML = '';
+            
+            const grid = document.createElement('div');
+            grid.className = 'win95-icon-grid';
+            
             const hoy = new Date();
             
             misCartas.forEach((carta, index) => {
-                const isLocked = hoy < new Date(carta.date);
-                const folder = document.createElement('div');
+                const fechaCarta = new Date(carta.date);
+                const isLocked = hoy < fechaCarta;
                 
-                folder.innerHTML = `
-                    <span class="folder-icon">${isLocked ? '📁🔒' : '📂✨'}</span>
-                    <p class="card-title">${carta.title}</p>
-                    <small class="card-date">${carta.date}</small>
-                `;
+                const item = document.createElement('div');
+                item.className = 'win95-icon-item';
                 
-                folder.onmouseenter = () => {
-                    if(!isLocked) folder.querySelector('.folder-icon').style.transform = 'scale(1.25) rotate(3deg)';
-                };
-                folder.onmouseleave = () => {
-                    folder.querySelector('.folder-icon').style.transform = 'scale(1) rotate(0deg)';
-                };
+                // Icono de carpeta Win95 (sin emojis)
+                const folderIcon = document.createElement('div');
+                folderIcon.className = 'win95-folder-icon' + (isLocked ? ' win95-folder-icon-locked' : '');
                 
-                folder.onclick = () => {
+                const title = document.createElement('div');
+                title.className = 'win95-icon-title';
+                title.textContent = carta.title;
+                
+                const dateSpan = document.createElement('div');
+                dateSpan.className = 'win95-icon-date';
+                dateSpan.textContent = carta.date;
+                
+                item.appendChild(folderIcon);
+                item.appendChild(title);
+                item.appendChild(dateSpan);
+                
+                item.onclick = () => {
                     if(isLocked) {
-                        // Efecto de "temblor" para indicar bloqueo
-                        folder.animate([
-                            { transform: 'translateX(0) rotate(0deg)' },
-                            { transform: 'translateX(-8px) rotate(-2deg)' },
-                            { transform: 'translateX(8px) rotate(2deg)' },
-                            { transform: 'translateX(-4px) rotate(-1deg)' },
-                            { transform: 'translateX(4px) rotate(1deg)' },
-                            { transform: 'translateX(0) rotate(0deg)' }
-                        ], { duration: 300, easing: 'ease-in-out' });
+                        // Efecto visual de bloqueo estilo Win95
+                        item.style.background = '#000080';
+                        item.style.color = 'white';
+                        setTimeout(() => {
+                            item.style.background = '';
+                            item.style.color = '';
+                        }, 200);
+                        alert('Acceso denegado: Esta carta aún no está disponible.\nFecha de apertura: ' + carta.date);
                         return;
                     }
-                    showModal(carta);
+                    showModalWin95(carta);
                 };
                 
-                container.appendChild(folder);
+                grid.appendChild(item);
             });
+            
+            container.appendChild(grid);
         }
 
-        // 🪟 Función para modal de carta elegante
-        function showModal(carta) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; inset: 0; 
-                background: rgba(10,10,10,0.92);
-                display: flex; justify-content: center; align-items: center;
-                z-index: 200; animation: fadeIn 0.3s ease;
-                padding: 20px;
-            `;
+        // Modal estilo Windows 95
+        function showModalWin95(carta) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'win95-modal-overlay';
             
-            modal.innerHTML = `
-                <div style="
-                    background: var(--vintage-paper);
-                    border: 8px double var(--ink);
-                    padding: 35px 30px;
-                    max-width: 520px;
-                    width: 100%;
-                    text-align: center;
-                    box-shadow: 0 0 60px rgba(184, 134, 11, 0.6);
-                    animation: slideUp 0.4s ease;
-                    font-family: 'Special Elite', cursive;
-                    position: relative;
-                    border-radius: 5px;
-                ">
-                    <button onclick="this.closest('div[style*=\"fixed\"]').remove()" 
-                        style="
-                            position: absolute; top: 10px; right: 15px;
-                            background: none; border: none;
-                            font-size: 1.8rem; color: var(--ink);
-                            cursor: pointer; opacity: 0.7;
-                            transition: 0.2s;
-                        "
-                        onmouseover="this.style.opacity='1'; this.style.transform='scale(1.2)'"
-                        onmouseout="this.style.opacity='0.7'; this.style.transform='scale(1)'"
-                    >✕</button>
-                    
-                    <h3 style="font-family: 'Cinzel'; color: var(--love-red); margin-bottom: 20px; font-size: 1.6rem;">
-                        ✦ ${carta.title} ✦
-                    </h3>
-                    
-                    <div style="
-                        background: rgba(184, 134, 11, 0.1);
-                        padding: 20px;
-                        border-radius: 8px;
-                        border-left: 4px solid var(--gold);
-                        margin: 20px 0;
-                    ">
-                        <p style="font-size: 1.25rem; line-height: 1.7; color: var(--ink);">
+            modalOverlay.innerHTML = `
+                <div class="win95-modal">
+                    <div class="win95-modal-title">
+                        <span>Carta - ${carta.title}</span>
+                        <span class="win95-modal-close" onclick="this.closest('.win95-modal-overlay').remove()">×</span>
+                    </div>
+                    <div class="win95-modal-content">
+                        <div class="win95-modal-text">
+                            <strong>Fecha:</strong> ${carta.date}<br><br>
                             ${carta.msg}
-                        </p>
+                        </div>
+                        <div class="win95-modal-signature">
+                            ♾️ Con amor, siempre
+                        </div>
+                        <div style="text-align: center;">
+                            <button class="win95-modal-button" onclick="this.closest('.win95-modal-overlay').remove()">
+                                Aceptar
+                            </button>
+                        </div>
                     </div>
-                    
-                    <div style="
-                        margin-top: 25px; 
-                        font-family: 'Great Vibes', cursive; 
-                        font-size: 2rem; 
-                        color: var(--gold);
-                        text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
-                    ">
-                        ♾️ Con amor, siempre
-                    </div>
-                    
-                    <button onclick="this.closest('div[style*=\"fixed\"]').remove()" 
-                        style="
-                            margin-top: 25px;
-                            padding: 12px 40px;
-                            background: var(--ink);
-                            color: var(--vintage-paper);
-                            border: 2px solid var(--gold);
-                            font-family: 'Cormorant Garamond', serif;
-                            font-size: 1.1rem;
-                            cursor: pointer;
-                            border-radius: 30px;
-                            transition: 0.3s;
-                        "
-                        onmouseover="this.style.background='var(--gold)'; this.style.color='#000'"
-                        onmouseout="this.style.background='var(--ink)'; this.style.color='var(--vintage-paper)'"
-                    >
-                        Cerrar carta ✉️
-                    </button>
                 </div>
             `;
             
-            document.body.appendChild(modal);
-            modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+            document.body.appendChild(modalOverlay);
             
             // Cerrar con Escape
             document.onkeydown = (e) => {
-                if(e.key === 'Escape') modal.remove();
+                if(e.key === 'Escape') {
+                    modalOverlay.remove();
+                    document.onkeydown = null;
+                }
             };
         }
 
         // ============================================
-        // 🎮 5. MINIJUEGO OBBIIE MEJORADO
+        // 🎮 6. MINIJUEGO OBBIIE MEJORADO
         // ============================================
         function startObbie() {
             const canvas = document.getElementById('game-canvas');
             const ctx = canvas.getContext('2d');
             
-            // Ajustar canvas para móviles
             if(window.innerWidth < 768) {
                 canvas.width = 400;
                 canvas.height = 300;
@@ -696,7 +825,6 @@
             const groundY = canvas.height - 50;
             const speed = 6;
             
-            // Meta del juego (corazón)
             const goal = { 
                 x: canvas.width - 70, 
                 y: groundY - 40, 
@@ -732,17 +860,14 @@
             }
             
             function draw() {
-                // Verificar si la escena sigue activa
                 if(!document.getElementById('scene-game')?.classList.contains('active')) return;
                 
-                // Fondo con degradado vintage
                 const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
                 gradient.addColorStop(0, '#e4d5b7');
                 gradient.addColorStop(1, '#c9b896');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Patrón de textura sutil
                 ctx.fillStyle = 'rgba(62, 39, 35, 0.03)';
                 for(let i = 0; i < canvas.width; i += 20) {
                     for(let j = 0; j < canvas.height; j += 20) {
@@ -752,13 +877,11 @@
                     }
                 }
                 
-                // Suelo con textura
                 ctx.fillStyle = "#5d4037";
                 ctx.fillRect(0, groundY + 28, canvas.width, 22);
                 ctx.fillStyle = "#3e2723";
                 ctx.fillRect(0, groundY + 25, canvas.width, 5);
                 
-                // Decoración del suelo
                 ctx.strokeStyle = "rgba(184, 134, 11, 0.5)";
                 ctx.setLineDash([5, 3]);
                 ctx.beginPath();
@@ -767,12 +890,9 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
-                // Meta (corazón)
                 if(!reached) {
-                    // Animación de pulso para el corazón
                     const pulse = 1 + Math.sin(Date.now() / 200) * 0.1;
                     drawHeart(goal.x, goal.y, goal.w * pulse, "#b71c1c");
-                    // Brillo dorado
                     ctx.strokeStyle = "rgba(184, 134, 11, 0.6)";
                     ctx.lineWidth = 2;
                     drawHeart(goal.x, goal.y, goal.w * pulse + 4, "transparent");
@@ -781,16 +901,13 @@
                     drawHeart(goal.x, goal.y, goal.w, "#4ade80");
                 }
                 
-                // Jugador (cuadrado con estilo vintage)
                 ctx.fillStyle = reached ? "#4ade80" : "#b71c1c";
                 ctx.fillRect(player.x, player.y, player.width, player.height);
                 
-                // Borde del jugador
                 ctx.strokeStyle = "#3e2723";
                 ctx.lineWidth = 2;
                 ctx.strokeRect(player.x, player.y, player.width, player.height);
                 
-                // Ojos del jugador (detalle cute)
                 ctx.fillStyle = "#fff";
                 ctx.fillRect(player.x + 6, player.y + 8, 6, 6);
                 ctx.fillRect(player.x + 16, player.y + 8, 6, 6);
@@ -798,7 +915,6 @@
                 ctx.fillRect(player.x + 8, player.y + 10, 3, 3);
                 ctx.fillRect(player.x + 18, player.y + 10, 3, 3);
                 
-                // Partículas de celebración
                 particles.forEach((p, index) => {
                     ctx.fillStyle = p.color;
                     ctx.beginPath();
@@ -807,13 +923,12 @@
                     
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.vy += 0.2; // gravedad ligera
+                    p.vy += 0.2;
                     p.life--;
                     
                     if(p.life <= 0) particles.splice(index, 1);
                 });
                 
-                // Texto de victoria
                 if(reached) {
                     ctx.fillStyle = "rgba(62, 39, 35, 0.9)";
                     ctx.font = "bold 22px 'Cinzel', serif";
@@ -825,7 +940,6 @@
                     ctx.fillText("Nuestro amor no tiene límites", canvas.width/2, 85);
                 }
                 
-                // Instrucciones sutiles
                 if(!reached) {
                     ctx.fillStyle = "rgba(62, 39, 35, 0.6)";
                     ctx.font = "13px 'Special Elite', cursive";
@@ -833,18 +947,15 @@
                     ctx.fillText("← → mover | ESPACIO saltar", 15, 25);
                 }
                 
-                // Física del jugador
                 player.vy += gravity;
                 player.y += player.vy;
                 
-                // Colisión con suelo
                 if(player.y >= groundY) {
                     player.y = groundY;
                     player.vy = 0;
                     player.jumping = false;
                 }
                 
-                // Colisión con meta
                 if(!reached && 
                    player.x < goal.x + goal.w && 
                    player.x + player.width > goal.x && 
@@ -852,7 +963,6 @@
                    player.y + player.height > goal.y) {
                     reached = true;
                     createGoalParticles(goal.x, goal.y);
-                    // Pequeño efecto de vibración en canvas
                     canvas.style.animation = 'pulse 0.3s ease';
                     setTimeout(() => canvas.style.animation = '', 300);
                 }
@@ -860,7 +970,6 @@
                 requestAnimationFrame(draw);
             }
             
-            // Controles
             const keys = {};
             window.onkeydown = (e) => {
                 keys[e.key] = true;
@@ -874,7 +983,6 @@
             };
             window.onkeyup = (e) => { keys[e.key] = false; };
             
-            // Soporte táctil para móviles
             let touchStartX = 0;
             canvas.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
@@ -902,10 +1010,8 @@
                 e.preventDefault();
             }, { passive: false });
             
-            // Iniciar el juego
             draw();
             
-            // Limpiar eventos al salir
             const originalBack = document.querySelector('#scene-game .back-btn').onclick;
             document.querySelector('#scene-game .back-btn').onclick = () => {
                 reached = false;
@@ -916,15 +1022,14 @@
         }
 
         // ============================================
-        // ✨ 6. PARTÍCULAS MÁGICAS FLOTANTES
+        // ✨ 7. PARTÍCULAS MÁGICAS FLOTANTES
         // ============================================
         function createParticles() {
             const container = document.getElementById('particles');
             if(!container) return;
             
-            // Crear partículas periódicamente
             setInterval(() => {
-                if(Math.random() > 0.3) { // 70% de probabilidad
+                if(Math.random() > 0.3) {
                     const p = document.createElement('div');
                     const drift = (Math.random() - 0.5) * 100;
                     p.style.cssText = `
@@ -946,7 +1051,6 @@
                 }
             }, 600);
             
-            // Algunas partículas iniciales
             for(let i = 0; i < 15; i++) {
                 setTimeout(() => {
                     const p = document.createElement('div');
@@ -972,47 +1076,19 @@
         }
 
         // ============================================
-        // 🎊 7. EFECTO CONFETI PARA CELEBRACIONES
-        // ============================================
-        function createConfetti() {
-            const colors = ['#b71c1c', '#b8860b', '#e4d5b7', '#3e2723', '#ff6b9d'];
-            for(let i = 0; i < 40; i++) {
-                const conf = document.createElement('div');
-                conf.style.cssText = `
-                    position: fixed;
-                    width: ${6 + Math.random()*8}px; 
-                    height: ${6 + Math.random()*8}px;
-                    background: ${colors[Math.floor(Math.random()*colors.length)]};
-                    left: ${Math.random()*100}vw;
-                    top: -20px;
-                    border-radius: ${Math.random() > 0.5 ? '50%' : '3px'};
-                    animation: fall ${2 + Math.random()*3}s linear forwards;
-                    z-index: 150;
-                    pointer-events: none;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                `;
-                document.body.appendChild(conf);
-                setTimeout(() => conf.remove(), 5000);
-            }
-        }
-
-        // ============================================
         // 🚀 INICIALIZACIÓN
         // ============================================
-        // Prevenir menú contextual en elementos interactivos
-        document.querySelectorAll('.marker, .grid-cartas > div, button').forEach(el => {
+        document.querySelectorAll('.marker, .win95-icon-item, button').forEach(el => {
             el.addEventListener('contextmenu', e => e.preventDefault());
         });
 
-        // Soporte para tecla Escape en modales
         document.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
-                const modal = document.querySelector('div[style*="position: fixed"]');
+                const modal = document.querySelector('.win95-modal-overlay');
                 if(modal) modal.remove();
             }
         });
 
-        // Ajustar canvas si cambia el tamaño de ventana
         window.addEventListener('resize', () => {
             const canvas = document.getElementById('game-canvas');
             if(canvas && window.innerWidth < 768) {
@@ -1021,7 +1097,6 @@
             }
         });
 
-        // Mensaje de bienvenida en consola (detalle secreto 💕)
         console.log('%c✨ Sempiterno ♾️ ✨', 'color: #b8860b; font-size: 16px; font-weight: bold;');
         console.log('%cHecho con amor para Niurka 💕', 'color: #b71c1c; font-style: italic;');
     </script>
